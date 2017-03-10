@@ -16,8 +16,4 @@ csock.bind(('', 5001))
 
 # sendto MSG, IP, PORT
 csock.sendto(MESSAGE.encode('utf-8'), (UDP_IP, UDP_PORT))
-# receive
-s, addr = csock.recvfrom(1024)
-
-print('s', s)
-print('addr', addr)
+print("send")
