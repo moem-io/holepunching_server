@@ -23,9 +23,6 @@ while True:
     # print('rece : ', data.decode('utf-8'))
     datas = data.decode('utf-8').split(',')
 
-    # if datas[0] == 'holl':
-    #     print('datas[2]', datas[2])
-
     if datas[0] == 'holl':
         addr = (datas[1], int(datas[2]))
         csock.sendto(MESSAGE.encode('utf-8'), addr)
