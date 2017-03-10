@@ -15,7 +15,7 @@ csock.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
 csock.bind(('', 3334))
 
 # sendto MSG, IP, PORT
-csock.sendto(MESSAGE.encode('utf-8'), (UDP_IP, UDP_PORT))
+# csock.sendto(MESSAGE.encode('utf-8'), (UDP_IP, UDP_PORT))
 
 while True:
     data, addr = csock.recvfrom(1024)
