@@ -36,15 +36,17 @@ class ClientProtocol(DatagramProtocol):
             self.transport.write('ok'.encode('utf-8'), (sys.argv[1], int(sys.argv[2])))
             print('Connected to server, waiting for peer...')
 
-        elif not self.peer_init:
+        elif not self.peer_init: # 서버에서 둘 다 연결 되었을 때 이 조건 실행
             self.peer_init = True
             self.peer_address = self.toAddress(datagram.decode())
-            self.transport.write('init'.encode('utf-8'), self.peer_address)
+            self.transport.write('init'.encode('utf-8'), self.peer_address) # 이 때 peer_address는 컨트롤대쉬보드. 컨대한테 init을 보내면 컨대는 Message from어쩌고 보냄
             print ('Sent init to %s:%d' % self.peer_address)
 
-        elif not self.peer_connect:
+        elif not self.peer_connect: # 컨대가 Message어쩌고 보내면 여기서 받아서 컨대한테도 메시지 보내줌
             self.peer_connect = True
+            print('from foreign : ', datagram)
             host = self.transport.getHost().host
+            host = 'Im mac'
             port = self.transport.getHost().port
             msg = 'Message from %s:%d' % (host, port)
             self.transport.write(msg.encode('utf-8'), self.peer_address)
