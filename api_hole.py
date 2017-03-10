@@ -13,4 +13,6 @@ svrsock.bind((UDP_IP, UDP_PORT))
 while True:
     data, addr = svrsock.recvfrom(1024)
     print("received msg : ", data, " from ", addr)
+
+    print('addr[0]', addr[0])
     svrsock.sendto('im server'.encode('utf-8'), addr)
