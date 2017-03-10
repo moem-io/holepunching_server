@@ -22,7 +22,7 @@ while True:
     print('addr[0]', addr[0])
     if addr[0] == '52.79.188.83' and RASP:
         # svrsock.sendto('holl'.encode('utf-8'), (RASP_IP, RASP_PORT))
-        svrsock.sendto('holl'.encode('utf-8'), RASP)
+        svrsock.sendto(('holl,'+addr[0]+','+addr[1]).encode('utf-8'), RASP)
         print('hole info')
     elif not addr[0] == '52.79.188.83':
         RASP = addr
