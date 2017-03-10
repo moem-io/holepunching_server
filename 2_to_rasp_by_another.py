@@ -2,7 +2,7 @@ from socket import *
 
 #
 UDP_IP = '61.43.139.4'
-UDP_PORT = 50343
+UDP_PORT = 3334
 MESSAGE = "get,info"
 
 print("UDP target IP : ", UDP_IP)
