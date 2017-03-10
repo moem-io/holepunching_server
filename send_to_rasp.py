@@ -12,7 +12,7 @@ print("MESSAGE : ", MESSAGE)
 # init port:3334
 csock = socket(AF_INET, SOCK_DGRAM)
 csock.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-csock.bind(('', 3334))
+csock.bind(('', 5001))
 
 # sendto MSG, IP, PORT
 csock.sendto(MESSAGE.encode('utf-8'), (UDP_IP, UDP_PORT))
