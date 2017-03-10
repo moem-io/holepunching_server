@@ -9,4 +9,4 @@ print("UDP target port : ", UDP_PORT)
 print("MESSAGE : ", MESSAGE)
 
 sock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
-sock.sendto(MESSAGE, (UDP_IP, UDP_PORT))
+sock.sendto(MESSAGE.encode('utf-8'), (UDP_IP, UDP_PORT))
