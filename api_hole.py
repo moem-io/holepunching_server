@@ -20,9 +20,11 @@ while True:
     print("received msg : ", data, " from ", addr)
 
     print('addr[0]', addr[0])
-    if addr[0] == '52.79.188.83' and not RASP:
+    if addr[0] == '52.79.188.83' and RASP:
         # svrsock.sendto('holl'.encode('utf-8'), (RASP_IP, RASP_PORT))
         svrsock.sendto('holl'.encode('utf-8'), RASP)
-    else:
+    elif not addr[0] == '52.79.188.83':
         RASP = addr
         svrsock.sendto('im server, nice to meet you rasp!!'.encode('utf-8'), addr)
+    else:
+        svrsock.sendto('not yet rasp..!!'.encode('utf-8'), addr)
