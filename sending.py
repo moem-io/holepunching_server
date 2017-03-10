@@ -1,14 +1,19 @@
-import socket
+from socket import *
 
-UDP_IP = "13.124.19.161"
-UDP_PORT = 42354
+UDP_IP = '13.124.19.161'
+UDP_PORT = 5001
 MESSAGE = "id:00001234"
 
 print("UDP target IP : ", UDP_IP)
 print("UDP target port : ", UDP_PORT)
 print("MESSAGE : ", MESSAGE)
 
-sock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
-sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-sock.bind(('', 3334))
-sock.sendto(MESSAGE.encode('utf-8'), (UDP_IP, UDP_PORT))
+csock = socket(AF_INET, SOCK_DGRAM)
+csock.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+csock.bind(('', 3334))
+# csock.sendto(MESSAGE.encode('utf-8'), ('13.124.19.161', 5001))
+csock.sendto(MESSAGE.encode('utf-8'), (UDP_IP, UDP_PORT))
+s, addr = csock.recvfrom(1024)
+
+print('s', s)
+print('addr', addr)

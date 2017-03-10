@@ -1,12 +1,14 @@
-import socket
+from socket import *
 
-UDP_IP = "127.0.0.1"
-UDP_PORT = 42354
+UDP_IP = ''
+UDP_PORT = 5001
 
-sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-sock.bind((UDP_IP, UDP_PORT))
+svrsock = socket(AF_INET, SOCK_DGRAM)
+svrsock.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+# svrsock.bind(('', 5001))
+svrsock.bind((UDP_IP, UDP_PORT))
 
 while True:
-    data, addr = sock.recvfrom(1024)
+    data, addr = svrsock.recvfrom(1024)
     print("received msg : ", data, " from ", addr)
+    svrsock.sendto('im server'.encode('utf-8'), addr)
