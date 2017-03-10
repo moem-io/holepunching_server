@@ -20,7 +20,16 @@ csock.sendto(MESSAGE.encode('utf-8'), (UDP_IP, UDP_PORT))
 while True:
     data, addr = csock.recvfrom(1024)
     print("received msg : ", data, " from ", addr)
-    print('rece : ', data.decode('utf-8'))
-    if data == b'holl':
+    # print('rece : ', data.decode('utf-8'))
+    datas = data.decode('utf-8').split(',')
+
+    # if datas[0] == 'holl':
+    #     print('datas[2]', datas[2])
+
+    if datas[0] == 'holl':
+        addr = (datas[1], int(datas[2]))
         csock.sendto(MESSAGE.encode('utf-8'), addr)
         print('I sent to the web!!')
+    elif datas[0] == 'get':
+        info = datas[1]
+        print('info', info)
