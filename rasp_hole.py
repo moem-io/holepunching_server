@@ -1,5 +1,5 @@
 from socket import *
-import time
+from time import localtime, strftime
 
 #
 UDP_IP = '13.124.19.161'
@@ -30,6 +30,6 @@ while True:
         print('I sent to the web!!')
     elif datas[0] == 'get':
         info = datas[1]
-        t = time.gmtime(1234567890)
+
         # time.time()
-        print('info', info, 'time : ', time.asctime(t))
+        print('info', info, 'time : ', strftime("%Y. %m. %0d. (%A) %H:%M:%S"))
