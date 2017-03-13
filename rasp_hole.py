@@ -32,4 +32,5 @@ while True:
         info = datas[1]
 
         # time.time()
-        print('info', info, 'time : ', strftime("%Y. %m. %0d. (%A) %H:%M:%S"))
+        print('info', info)
+        print('time : ', strftime("%Y. %m. %0d. (%A) %H:%M:%S"))
