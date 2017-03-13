@@ -30,5 +30,6 @@ while True:
         print('I sent to the web!!')
     elif datas[0] == 'get':
         info = datas[1]
-        time.time()
-        print('info', info, 'time : ', time.time())
+        t = time.gmtime(1234567890)
+        # time.time()
+        print('info', info, 'time : ', time.asctime(t))
