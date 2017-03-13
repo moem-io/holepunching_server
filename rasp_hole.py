@@ -1,4 +1,5 @@
 from socket import *
+import time
 
 #
 UDP_IP = '13.124.19.161'
@@ -29,4 +30,5 @@ while True:
         print('I sent to the web!!')
     elif datas[0] == 'get':
         info = datas[1]
-        print('info', info)
+        time.time()
+        print('info', info, 'time : ', time.time())
