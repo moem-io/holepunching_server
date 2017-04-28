@@ -1,0 +1,6 @@
+print('기상청 온도로 문 닫기')
+while True:
+    if (temp) < 18:
+        print('모터 ON')
+    else:
+        print('모터 OFF')
