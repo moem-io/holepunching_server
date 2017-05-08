@@ -50,7 +50,7 @@ def motorRun(angle=90):
     channel.queue_declare(queue='hello')
     channel.basic_publish(exchange='',
                           routing_key='hello',
-                          body=angle)
+                          body=str(angle))
     print("RABBITMQ, Send "+str(angle))
     connection.close()
     #todo 같으면 아무것도 안함
