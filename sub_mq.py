@@ -6,25 +6,18 @@ def on_connect(client, userdata, rc):
     client.subscribe('hello/world')
 
 def on_message(client, userdata, msg):
-    print("Topic: ", msg.topic + '\nMessage: ' + str(msg.payload))
+    print("MQTT, Topic: ", msg.topic + 'Message: ' + str(msg.payload))
 
+    # rabbit
     connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
     channel = connection.channel()
-
     channel.queue_declare(queue='hello')
-
-    channel.basic_publish(exchange='',
-                          routing_key='hello',
-                          body='Hello World!')
-    print(" [x] Sent 'Hello World!'")
+    channel.basic_publish(exchange='', routing_key='hello', body=str(msg.payload))
+    print("RABBITMQ, Send "+str(msg.payload))
     connection.close()
-
 
 client = mqtt.Client()
 client.on_connect = on_connect
 client.on_message = on_message
-
-# client.connect('test.mosquitto.org', 1883, 60)
 client.connect('13.124.19.161', 1883, 60)
-
 client.loop_forever()
