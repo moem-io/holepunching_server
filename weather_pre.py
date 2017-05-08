@@ -20,5 +20,6 @@ def temperatureFromSky():
         weatherFirst = False
         return temp
     else:
-        time.sleep(600)
+        # time.sleep(600)
+        time.sleep(10)
         return temp
