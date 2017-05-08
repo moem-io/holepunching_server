@@ -32,7 +32,7 @@ import pika
 # db
 from app.models.nodes import Nodes
 from app.models.sensor import Sensors
-# from app import session
+from app import session
 
 # motor
 def motorRun(angle=90):

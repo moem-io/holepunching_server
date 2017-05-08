@@ -20,4 +20,4 @@ session = Session()
 # from app.models.sensor import Sensors
 # s = Sensors(1, 'typeC', 'error', False, 1)
 # session.add(s)
-# session.commit()
+# session.commit()ls

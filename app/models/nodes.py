@@ -4,7 +4,7 @@ from app import Base
 
 class Nodes(Base):
     node_status = ['healthy', 'warning', 'error']
-    __tablename__ = 'nodes'
+    __tablename__ = 'Nodes'
 
     id = Column(Integer, primary_key=True)
     depth = Column(Integer, nullable=False, default=0)
