@@ -10,12 +10,15 @@ app_origin = f_origin.read()
 print(app_origin)
 
 # 만약 특정 변수가 발견되면 그 변수에 맞는거 가져옴
-pre = None
+pre = ''
 # print(app_origin.count('temp')
-if app_origin.count('temp'):
-    pre = open('weather_pre.py', 'r').read()
+if app_origin.count('temperatureFromSky()'):
+    pre += open('weather_pre.py', 'r').read()+'\n\n'
     # location = app_origin.find('temp')
     # print(location)
+
+if app_origin.count('motorRun'):
+    pre += open('motor_pre.py', 'r').read()+'\n\n'
 
 # 앱 변형
 modi = app_origin
