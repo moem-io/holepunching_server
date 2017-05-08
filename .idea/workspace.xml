@@ -3,9 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="eed29df3-320d-4ae2-8d19-806380011631" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app_last.py" afterPath="$PROJECT_DIR$/app_last.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/motor_pre.py" afterPath="$PROJECT_DIR$/motor_pre.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/requirements.txt" afterPath="$PROJECT_DIR$/requirements.txt" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/weather_pre.py" afterPath="$PROJECT_DIR$/weather_pre.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -167,7 +164,7 @@
       <file leaf-file-name="app_last.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/app_last.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="673">
+            <state relative-caret-position="501">
               <caret line="55" column="0" lean-forward="true" selection-start-line="55" selection-start-column="0" selection-end-line="55" selection-end-column="0" />
               <folding>
                 <element signature="e#14#38#0" expanded="true" />
@@ -239,13 +236,13 @@
         <option value="$PROJECT_DIR$/app/__init__.py" />
         <option value="$PROJECT_DIR$/app_modi.py" />
         <option value="$PROJECT_DIR$/app_test.txt" />
-        <option value="$PROJECT_DIR$/app_last.py" />
         <option value="$PROJECT_DIR$/receive.py" />
         <option value="$PROJECT_DIR$/rabbit_mq/send.py" />
         <option value="$PROJECT_DIR$/mqtt_for/my_mq_cl.py" />
         <option value="$PROJECT_DIR$/sub_mq.py" />
         <option value="$PROJECT_DIR$/motor_pre.py" />
         <option value="$PROJECT_DIR$/weather_pre.py" />
+        <option value="$PROJECT_DIR$/app_last.py" />
       </list>
     </option>
   </component>
@@ -723,7 +720,7 @@
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3290735" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3375932" sideWeight="0.49786553" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.18317358" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.18317358" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.39616615" sideWeight="0.49786553" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
@@ -1423,7 +1420,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/app_last.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="673">
+        <state relative-caret-position="501">
           <caret line="55" column="0" lean-forward="true" selection-start-line="55" selection-start-column="0" selection-end-line="55" selection-end-column="0" />
           <folding>
             <element signature="e#14#38#0" expanded="true" />

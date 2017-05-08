@@ -32,13 +32,13 @@ import pika
 # db
 from app.models.nodes import Nodes
 from app.models.sensor import Sensors
-from app import session
+# from app import session
 
 # motor
 def motorRun(angle=90):
     print('motor angle', angle)
-    db = session.query(Sensors).all()
-    print(db)
+    # db = session.query(Sensors).all()
+    # print(db)
 
     #todo 모터의 번호를 설정디비에서 가저옴
     #todo 3번 모터의 값이 입력값과 같은지 확인
