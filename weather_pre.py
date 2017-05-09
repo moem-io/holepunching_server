@@ -10,16 +10,16 @@ weatherFirst = True
 def temperatureFromSky():
     global weatherFirst
     temp = 0
+    if weatherFirst:
+        weatherFirst = False
+    else:
+        time.sleep(10)
     res = get('https://api.moem.io/outside/weather')
     js = json.loads(res.text)
     for i in js['json_list']:
         if i['category'] == 'T1H':
             # print('temp:'+str(i['obsrValue']))
             temp = i['obsrValue']
-    if weatherFirst:
-        weatherFirst = False
-        return temp
-    else:
-        # time.sleep(600)
-        time.sleep(10)
-        return temp
+    print('temperature : ', temp)
+    return temp
+

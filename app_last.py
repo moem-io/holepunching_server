@@ -10,19 +10,19 @@ weatherFirst = True
 def temperatureFromSky():
     global weatherFirst
     temp = 0
+    if weatherFirst:
+        weatherFirst = False
+    else:
+        time.sleep(10)
     res = get('https://api.moem.io/outside/weather')
     js = json.loads(res.text)
     for i in js['json_list']:
         if i['category'] == 'T1H':
             # print('temp:'+str(i['obsrValue']))
             temp = i['obsrValue']
-    if weatherFirst:
-        weatherFirst = False
-        return temp
-    else:
-        # time.sleep(600)
-        time.sleep(10)
-        return temp
+    print('temperature : ', temp)
+    return temp
+
 
 
 # motor_pre
@@ -47,11 +47,11 @@ def motorRun(angle=90):
     # rabbit
     connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
     channel = connection.channel()
-    channel.queue_declare(queue='hello')
+    channel.queue_declare(queue='motor_q')
     channel.basic_publish(exchange='',
-                          routing_key='hello',
+                          routing_key='motor_q',
                           body=str(angle))
-    print("RABBITMQ, Send "+str(angle))
+    print("RABBITMQ, motor queue, Send "+str(angle))
     connection.close()
     #todo 같으면 아무것도 안함
 

@@ -20,10 +20,10 @@ def motorRun(angle=90):
     # rabbit
     connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
     channel = connection.channel()
-    channel.queue_declare(queue='hello')
+    channel.queue_declare(queue='motor_q')
     channel.basic_publish(exchange='',
-                          routing_key='hello',
-                          body=angle)
-    print("RABBITMQ, Send "+str(angle))
+                          routing_key='motor_q',
+                          body=str(angle))
+    print("RABBITMQ, motor queue, Send "+str(angle))
     connection.close()
     #todo 같으면 아무것도 안함
