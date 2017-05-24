@@ -4,6 +4,7 @@ import pika
 def on_connect(client, userdata, rc):
     print('connected with result'+str(rc))
     client.subscribe('control/motor')
+    client.subscribe('app/upload')
 
 def on_message(client, userdata, msg):
     print("MQTT, Topic: ", msg.topic + ', Message: ' + str(msg.payload))
@@ -20,4 +21,4 @@ client = mqtt.Client()
 client.on_connect = on_connect
 client.on_message = on_message
 client.connect('13.124.19.161', 1883, 60)
-client.loop_forever()
+client.loop_forever
