@@ -136,3 +136,6 @@ crashlytics-build.properties
 fabric.properties
 
 .idea/vcs.xml
+
+# my
+.idea/workspace.xml
