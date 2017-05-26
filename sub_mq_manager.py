@@ -12,7 +12,8 @@ def getAppModi(app_origin):
 
 
     # 만약 특정 변수가 발견되면 그 변수에 맞는거 가져옴
-    pre = ''
+    pre = '#-*- coding: utf-8 -*-\n'
+
     # print(app_origin.count('temp')
     if app_origin.count('temperatureFromSky()'):
         pre += open('weather_pre.py', 'r').read() + '\n\n'

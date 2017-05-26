@@ -59,9 +59,21 @@ def motorRun(angle=90):
     #todo 같으면 아무것도 안함
 
 
-print('기상청 온도로 문 닫기')
+temperatureFromSky()
+
+temperatureFromSky()
+
+motorRun()
+
+print('미세먼지로 문 닫기')
 while True:
-  if temperatureFromSky() < 18:
+  if dustFromSky() > 50:
     motorRun(0)
   else:
-    motorRun(180)
+    motorRun(270)
+
+remoteControl('on')
+
+ledRun()
+
+buzzerRun('do')
