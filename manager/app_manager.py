@@ -1,3 +1,5 @@
+#-*- coding: utf-8 -*-
+
 import pika
 import os
 import sys
@@ -20,7 +22,7 @@ def callback(ch, method, properties, body):
         # result = subprocess.check_output('ls')
         # result = subprocess.call('../app_user/python '+kind[1]+'.py')
         # print('os.pardir()', os.pardir)
-        os.system('cd .. && source .env && python app_user/'+kind[1]+'.py')
+        os.system('cd .. && . .env && python app_user/'+kind[1]+'.py')
         # os.system('source 1.sh')
 
 
