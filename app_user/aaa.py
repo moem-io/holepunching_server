@@ -30,6 +30,9 @@ import threading
 import pika
 
 # db
+import os
+import sys
+sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 from app.models.nodes import Nodes
 from app.models.sensor import Sensors
 from app import session
