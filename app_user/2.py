@@ -1,3 +1,4 @@
+#-*- coding: utf-8 -*-
 # weather_pre
 from requests import get
 import json
@@ -59,21 +60,9 @@ def motorRun(angle=90):
     #todo 같으면 아무것도 안함
 
 
-temperatureFromSky()
-
-temperatureFromSky()
-
-motorRun()
-
-print('미세먼지로 문 닫기')
+print('기상청 온도로 모터 돌리기')
 while True:
-  if dustFromSky() > 50:
+  if temperatureFromSky() > 18:
     motorRun(0)
   else:
     motorRun(270)
-
-remoteControl('on')
-
-ledRun()
-
-buzzerRun('do')

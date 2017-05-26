@@ -16,9 +16,9 @@ def getAppModi(app_origin):
 
     # print(app_origin.count('temp')
     if app_origin.count('temperatureFromSky()'):
-        pre += open('weather_pre.py', 'r').read() + '\n\n'
+        pre += open('pre/weather_pre.py', 'r').read() + '\n\n'
     if app_origin.count('motorRun'):
-        pre += open('motor_pre.py', 'r').read() + '\n\n'
+        pre += open('pre/motor_pre.py', 'r').read() + '\n\n'
 
     # 앱 변형
     modi = pre + '\n' + app_contnet
@@ -33,7 +33,7 @@ def getAppModi(app_origin):
 
 def on_connect(client, userdata, rc):
     print('connected with result'+str(rc))
-    client.subscribe('control/motor')
+    client.subscribe('control/motor/00001214')
     client.subscribe('app/upload')
     client.subscribe('app/upload/00001214')
 
@@ -52,12 +52,12 @@ def on_message(client, userdata, msg):
         print("RABBITMQ,", 'app_start,'+app_title)
         connection.close()
 
-    elif msg.topic == 'control/motor':
+    elif msg.topic == 'control/motor/00001214':
         # rabbit
         connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
         channel = connection.channel()
         channel.queue_declare(queue='motor_q')
-        channel.basic_publish(exchange='', routing_key='motor_q', body=str(msg.payload))
+        channel.basic_publish(exchange='', routing_key='motor_q', body=msg.payload.decode())
         print("RABBITMQ, Send "+str(msg.payload))
         connection.close()
 

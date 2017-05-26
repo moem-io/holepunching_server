@@ -54,7 +54,7 @@ def motorRun(angle=90):
     channel.queue_declare(queue='motor_q')
     channel.basic_publish(exchange='',
                           routing_key='motor_q',
-                          body='motor_1,'+'angle '+str(angle))
+                          body='1'+','+str(angle))
     print("RABBITMQ, motor queue, Send "+str(angle))
     connection.close()
     #todo 같으면 아무것도 안함
@@ -62,7 +62,7 @@ def motorRun(angle=90):
 
 print('기상청 온도로 모터 돌리기')
 while True:
-  if temperatureFromSky() > 50:
+  if temperatureFromSky() > 18:
     motorRun(0)
   else:
     motorRun(270)
