@@ -24,7 +24,7 @@ def spawn_app(i):
 
 
 def callback(ch, method, properties, body):
-    print(" RABBITMQ app_manager, Received %r" % body)
+    print("\nRABBITMQ app_manager, Received %r" % body)
 
     kind = body.decode().split(',')
     print(kind)
@@ -45,16 +45,17 @@ def callback(ch, method, properties, body):
         # print(out.decode())
 
     elif kind[0] == 'app_switch_toggle':
-        # print('kind[1]', kind[1])
-        query = session.query(AppModel).filter_by(id=kind[1]).first()
+        print('kind[1]', kind[1])
+        query = session.query(AppModel).filter_by(id=kind[1]).first() # 얘 반응이 느리다..왜지?
         print('query2', query.app_switch)
+        print('swt', kind[2])
 
-        if not query.app_switch:
+        if 'False' == kind[2]:
             conn = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
             ch = conn.channel()
-            ch.queue_declare(queue='app_'+str(kind[1]))
-            ch.basic_publish(exchange='', routing_key='app_'+str(kind[1]), body=str(kind[1])+','+'close')
-            print("RABBITMQ, Send " + str('hi'))
+            ch.queue_declare(queue='app_'+(kind[1]))
+            ch.basic_publish(exchange='', routing_key='app_'+(kind[1]), body=(kind[1])+','+(kind[2]))
+            print("RABBITMQ, Send " + str(kind[1]))
             conn.close()
             # ch.close() 이거 하면 안됨
         else:
@@ -62,11 +63,10 @@ def callback(ch, method, properties, body):
             pt = threading.Thread(target=spawn_app, args=(kind[1],))
             pt.start()
 
-        session.commit()
-        query = session.query(AppModel).filter_by(id=kind[1]).first()
+        # session.commit()
+        # query = session.query(AppModel).filter_by(id=kind[1]).first()
         # print('query3', query.app_switch)
-
-        session.close()
+        # session.close()
 
 
         # 됨

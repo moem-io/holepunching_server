@@ -44,7 +44,7 @@ def getAppModi(app_origin):
     app_switch = False
 
     # 만약 특정 변수가 발견되면 그 변수에 맞는거 가져옴
-    pre = '#-*- coding: utf-8 -*-\n'
+    pre = '#-*- coding: utf-8 -*-\n\n'
 
     app_input = ''
     input_detail = "[{'icon': 'hand rock icon', 'value': '두 번'}, {'icon': 'bullseye icon', 'value': '세기 : 45%'}]"
@@ -67,6 +67,8 @@ def getAppModi(app_origin):
         pre += open('pre/motor_pre.py', 'r').read() + '\n\n'
         output += '서보 모터'
 
+
+    # add db
     db_app = session.query(AppModel).filter_by(app_name=app_title).first()
     if db_app:
         session.query(AppModel).filter_by(app_name=app_title).delete()
@@ -76,9 +78,9 @@ def getAppModi(app_origin):
     query = session.query(AppModel).order_by(AppModel.id.desc()).first()
     print('query.id', query.id)
 
-    # todo
-    # pre +=
-
+    # final pre
+    pre += 'rabbit_app_id = ' + str(query.id) + '\n\n'
+    pre += open('pre/rabbit_pre.py', 'r').read() + '\n\n'
 
     # 앱 변형
     modi = pre + '\n' + app_content
@@ -110,16 +112,17 @@ def on_message(client, userdata, msg):
     print("MQTT, Topic: ", msg.topic + ', Message: ' + str(msg.payload))
 
     if msg.topic == 'control/app/00001214':
+        # time.sleep(1) 이게 느리면 웹에 반영이 느림
 
         c = session.query(AppModel).order_by('id').all()
         # c = AppModel.query.all()
-        # for i in c:
-        #     print('c', i.app_switch)
+        for i in c:
+            print('c', i.app_switch)
 
 
         # query = session.query(AppModel).filter_by(id=18).first()
-        query = session.query(AppModel).order_by(AppModel.id.desc()).first()
-        print('qq,c', query.app_switch)
+        # query = session.query(AppModel).order_by(AppModel.id.desc()).first()
+        # print('qq,c', query.app_switch)
 
         # session.commit()
         res = post(api_url + 'app/save', data=json.dumps(c, cls=AlchemyEncoder))
@@ -153,7 +156,7 @@ def on_message(client, userdata, msg):
         id = msg.payload.decode()
         query = session.query(AppModel).filter_by(id=id).first()
 
-        # print('query1', (query.app_switch))
+        print('query1', (query.app_switch))
 
         if query.app_switch:
             query.app_switch = False
@@ -161,7 +164,7 @@ def on_message(client, userdata, msg):
             query.app_switch = True
         session.commit()
 
-        # time.sleep(1)
+        # time.sleep(1) 얘는 프로세스 자체 멈추니까 웹에 반영도 느려져..안돼
 
         # print('query', (query.app_switch))
         # payload = dumps(query)
@@ -173,7 +176,7 @@ def on_message(client, userdata, msg):
         connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
         channel = connection.channel()
         channel.queue_declare(queue='app_q')
-        channel.basic_publish(exchange='', routing_key='app_q', body='app_switch_toggle,' + msg.payload.decode())
+        channel.basic_publish(exchange='', routing_key='app_q', body='app_switch_toggle,' + msg.payload.decode()+','+str(query.app_switch))
         print("RABBITMQ, Send " + str(msg.payload))
         connection.close()
 
