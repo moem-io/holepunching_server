@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker
 
 from config import *
 
-engine = create_engine('mysql+pymysql://{0}:{1}@{2}/{3}'.format(id_db, ps_db, host_db, name_db))
+engine = create_engine('mysql+pymysql://{0}:{1}@{2}/{3}?charset=utf8'.format(id_db, ps_db, host_db, name_db))
 Base = declarative_base()
 Session = sessionmaker(bind=engine)
 

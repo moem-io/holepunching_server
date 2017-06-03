@@ -1,4 +1,5 @@
 __all__ = [
     'nodes',
-    'sensor'
+    'sensor',
+    'app_model',
 ]
