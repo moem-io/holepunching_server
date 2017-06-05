@@ -6,12 +6,13 @@ from app import session
 import json
 from requests import post
 from sqlalchemy.ext.serializer import loads, dumps
-
-# web_url = 'https://52.79.188.83/'
-api_url = 'http://127.0.0.1:5000/'
-
+from config import *
 from sqlalchemy.ext.declarative import DeclarativeMeta
 
+
+# web_url = 'https://52.79.188.83/'
+# api_url = 'http://127.0.0.1:5000/'
+api_url = API_URL
 
 class AlchemyEncoder(json.JSONEncoder):
     def default(self, obj):

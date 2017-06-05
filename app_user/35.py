@@ -1,10 +1,9 @@
 #-*- coding: utf-8 -*-
+
 # weather_pre
 from requests import get
 import json
 import time
-import threading
-from app.models.app_model import AppModel
 
 # 기상청 온도는 1시간 단위로 변함(30~40분 사이에 뜸)
 # 대기 타다가 정각에 가져오는걸로 만들자
@@ -44,7 +43,6 @@ from app import session
 def motorRun(angle=90):
     print('motor angle', angle)
     db = session.query(Sensors).all()
-    session.close()
     # print(db)
 
     #todo 모터의 번호를 설정디비에서 가저옴
@@ -62,32 +60,40 @@ def motorRun(angle=90):
     connection.close()
     #todo 같으면 아무것도 안함
 
+rabbit_app_id = 35
+
+# rabbit pre
+from app.models.app_model import AppModel
+import pika
+import threading
+from app import session
+
 connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
 channel = connection.channel()
 
-sw = True
+SW = True
 def callback(ch, method, properties, body):
-    global sw
+    global SW
     global connection
     global channel
+    global rabbit_app_id
 
     kind = body.decode().split(',')
-    if kind[0] == '28':
-        query = session.query(AppModel).filter_by(id=kind[0]).first()
-        if not query.app_switch:
-            sw = False
+    if kind[0] == str(rabbit_app_id):
+        # query = session.query(AppModel).filter_by(id=kind[0]).first()
+        if 'False' == kind[1]:
+            SW = False
             channel.close()
             connection.close()
-            print('get28')
-
-
+            print('get'+str(rabbit_app_id))
 
 def rabbit():
     global connection
     global channel
+    global rabbit_app_id
 
-    channel.queue_declare(queue='app_'+'28')
-    channel.basic_consume(callback, queue='app_'+'28', no_ack=True)
+    channel.queue_declare(queue='app_'+str(rabbit_app_id))
+    channel.basic_consume(callback, queue='app_'+str(rabbit_app_id), no_ack=True)
 
     print(' [*] Waiting for messages. To exit press CTRL+C')
     channel.start_consuming()
@@ -96,9 +102,9 @@ pt = threading.Thread(target=rabbit)
 pt.start()
 
 
-print('기상청 온도로 문 닫기')
-while sw:
-  if temperatureFromSky() < 18:
+print('기상청 온도로 모터 돌리기')
+while SW:
+  if temperatureFromSky() > 18:
     motorRun(0)
   else:
-    motorRun(180)
+    motorRun(270)

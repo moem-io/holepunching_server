@@ -60,7 +60,7 @@ def motorRun(angle=90):
     connection.close()
     #todo 같으면 아무것도 안함
 
-rabbit_app_id = 30
+rabbit_app_id = 36
 
 # rabbit pre
 from app.models.app_model import AppModel
@@ -71,27 +71,21 @@ from app import session
 connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
 channel = connection.channel()
 
-sw = True
+SW = True
 def callback(ch, method, properties, body):
-    global sw
+    global SW
     global connection
     global channel
     global rabbit_app_id
 
     kind = body.decode().split(',')
-    print('kind[0]', kind[0])
-    print('kind[1]', kind[1])
-    print('rabbit', str(rabbit_app_id))
-
     if kind[0] == str(rabbit_app_id):
-        query = session.query(AppModel).filter_by(id=kind[0]).first()
-        print('query30', query.app_switch)
+        # query = session.query(AppModel).filter_by(id=kind[0]).first()
         if 'False' == kind[1]:
-            sw = False
+            SW = False
             channel.close()
             connection.close()
             print('get'+str(rabbit_app_id))
-
 
 def rabbit():
     global connection
@@ -108,9 +102,9 @@ pt = threading.Thread(target=rabbit)
 pt.start()
 
 
-print('기상청 온도로 문 닫기')
-while sw:
-  if temperatureFromSky() < 18:
+print('기상청 온도로 모터 돌리기')
+while SW:
+  if temperatureFromSky() > 18:
     motorRun(0)
   else:
-    motorRun(180)
+    motorRun(270)

@@ -16,9 +16,9 @@ def callback(ch, method, properties, body):
 
     kind = body.decode().split(',')
     if kind[0] == str(rabbit_app_id):
-        query = session.query(AppModel).filter_by(id=kind[0]).first()
+        # query = session.query(AppModel).filter_by(id=kind[0]).first()
         if 'False' == kind[1]:
-            sw = False
+            SW = False
             channel.close()
             connection.close()
             print('get'+str(rabbit_app_id))

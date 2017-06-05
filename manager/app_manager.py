@@ -9,6 +9,7 @@ from app.models.app_model import AppModel
 import pexpect
 import threading
 import time
+from multiprocessing import Process
 
 connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
 channel = connection.channel()
@@ -18,12 +19,25 @@ channel.queue_declare(queue='app_q')
 
 # channel.queue_declare(queue='app_q') # 한개만 됨
 
+# def spawn_app(i):
+#     os.system('cd .. && source .env && python app_user/' + i + '.py')
+
+class SpawnApp(threading.Thread):
+    def __init__(self, app_id):
+        threading.Thread.__init__(self)
+        self.app_id = app_id
+
+    def run(self):
+        os.system('cd .. && source .env && python app_user/' + self.app_id + '.py')
+
+
 def spawn_app(i):
     os.system('cd .. && source .env && python app_user/' + i + '.py')
 
 
-
+pt = {}
 def callback(ch, method, properties, body):
+    global pt
     print("\nRABBITMQ app_manager, Received %r" % body)
 
     kind = body.decode().split(',')
@@ -45,10 +59,10 @@ def callback(ch, method, properties, body):
         # print(out.decode())
 
     elif kind[0] == 'app_switch_toggle':
-        print('kind[1]', kind[1])
-        query = session.query(AppModel).filter_by(id=kind[1]).first() # 얘 반응이 느리다..왜지?
-        print('query2', query.app_switch)
-        print('swt', kind[2])
+        # print('kind[1]', kind[1])
+        # query = session.query(AppModel).filter_by(id=kind[1]).first() # 얘 반응이 느리다..왜지?
+        # print('query2', query.app_switch)
+        # print('swt', kind[2])
 
         if 'False' == kind[2]:
             conn = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
@@ -59,9 +73,16 @@ def callback(ch, method, properties, body):
             conn.close()
             # ch.close() 이거 하면 안됨
         else:
+            # pt[int(kind[1])] = threading.Thread(target=spawn_app, args=(kind[1],))
+            # pt[int(kind[1])].start()
 
-            pt = threading.Thread(target=spawn_app, args=(kind[1],))
+            # pt = SpawnApp(kind[1])
+            # pt.start()
+
+            pt = Process(target=spawn_app, args=(kind[1],))
             pt.start()
+
+
 
         # session.commit()
         # query = session.query(AppModel).filter_by(id=kind[1]).first()
@@ -75,9 +96,9 @@ def callback(ch, method, properties, body):
         # pt.start()
 
 
-        print('threading.activeCount()', threading.activeCount())
-        print('threading.currentThread()', threading.currentThread())
-        print('threading.enumerate()', threading.enumerate())
+        # print('threading.activeCount()', threading.activeCount())
+        # print('threading.currentThread()', threading.currentThread())
+        # print('threading.enumerate()', threading.enumerate())
         # 실험
 
 
