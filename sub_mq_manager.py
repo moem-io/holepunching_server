@@ -29,22 +29,23 @@ def on_message(client, userdata, msg):
         # time.sleep(1) 이게 느리면 웹에 반영이 느림
 
         c = session.query(AppModel).order_by('id').all()
+
         # c = AppModel.query.all()
-        for i in c:
-            print('c', i.app_switch)
-
-
+        # for i in c:
+        #     print('c', i.app_switch)
         # query = session.query(AppModel).filter_by(id=18).first()
         # query = session.query(AppModel).order_by(AppModel.id.desc()).first()
         # print('qq,c', query.app_switch)
 
         # session.commit()
+
         res = post(api_url + 'app/save', data=json.dumps(c, cls=AlchemyEncoder))
+
         # res = post('http://127.0.0.1:5000/' + 'app/save', data=json.dumps(c, cls=AlchemyEncoder))
         # print('res', res)
 
-        for i in json.loads(json.dumps(c, cls=AlchemyEncoder)):
-            print('data', i['app_name'])
+        # for i in json.loads(json.dumps(c, cls=AlchemyEncoder)):
+        #     print('data', i['app_name'])
 
     elif msg.topic == 'app/upload/00001214':
         app_title = getAppModi(app_origin=msg.payload.decode())

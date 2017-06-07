@@ -10,9 +10,9 @@ from app.models.nodes import Nodes
 from app.models.sensor import Sensors
 from app import session
 
-# motor
+# led
 def ledRun(input=90):
-    print('led input', input)
+    print('led output', input)
     db = session.query(Sensors).all()
     # print(db)
 
@@ -27,6 +27,6 @@ def ledRun(input=90):
     channel.basic_publish(exchange='',
                           routing_key='led_q',
                           body='1'+','+str(input))
-    print("RABBITMQ, motor queue, Send "+str(input))
+    print("RABBITMQ, led queue, Send "+str(input))
     connection.close()
     #todo 같으면 아무것도 안함
