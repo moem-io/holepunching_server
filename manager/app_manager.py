@@ -24,7 +24,8 @@ channel.queue_declare(queue='app_q')
 
 
 def spawn_app(i):
-    os.system('cd .. && bash .env && python app_user/' + i + '.py')
+    # os.system('cd .. && source .env && python app_user/' + i + '.py')
+    os.system('bash .env && python app_user/' + i + '.py')
 
 
 pt = {}
