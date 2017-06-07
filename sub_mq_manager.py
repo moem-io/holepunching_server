@@ -91,6 +91,7 @@ def on_message(client, userdata, msg):
 
             c = session.query(AppModel).order_by('id').all()
             res = post(api_url + 'app/save', data=json.dumps(c, cls=AlchemyEncoder))
+            print(res)
 
             # rabbit
             connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
