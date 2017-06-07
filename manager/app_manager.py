@@ -2,13 +2,6 @@
 
 import pika
 import os
-import sys
-import subprocess
-from app import session
-from app.models.app_model import AppModel
-import pexpect
-import threading
-import time
 from multiprocessing import Process
 
 connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
