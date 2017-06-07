@@ -96,7 +96,7 @@ def getAppModi(app_origin):
     session.commit()
 
     query = session.query(AppModel).order_by(AppModel.id.desc()).first()
-    print('query.id', query.id)
+    # print('query.id', query.id)
 
     # final pre
     pre += 'rabbit_app_id = ' + str(query.id) + '\n\n'
@@ -111,7 +111,7 @@ def getAppModi(app_origin):
     f_modi.close()
 
     query = session.query(AppModel).all()
-    print('query', (query))
+    # print('query', (query))
     c = query
     res = post(api_url + 'app/save', data=json.dumps(c, cls=AlchemyEncoder))
 

@@ -36,7 +36,8 @@ def callback(ch, method, properties, body):
     kind = body.decode().split(',')
     print(kind)
     if kind[0] == 'app_upload':
-        os.system('ls')
+        print('uploading..')
+        # os.system('ls')
         # result = subprocess.check_output('../app_user/python '+kind[1]+'.py')
         # result = subprocess.check_output('ls')
         # result = subprocess.call('../app_user/python '+kind[1]+'.py')

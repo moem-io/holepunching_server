@@ -40,6 +40,7 @@ def on_message(client, userdata, msg):
         # session.commit()
 
         res = post(api_url + 'app/save', data=json.dumps(c, cls=AlchemyEncoder))
+        print(res)
 
         # res = post('http://127.0.0.1:5000/' + 'app/save', data=json.dumps(c, cls=AlchemyEncoder))
         # print('res', res)
@@ -49,15 +50,15 @@ def on_message(client, userdata, msg):
 
     elif msg.topic == 'app/upload/00001214':
         app_title = getAppModi(app_origin=msg.payload.decode())
-
-        time.sleep(3)
-
-        connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
-        channel = connection.channel()
-        channel.queue_declare(queue='app_q')
-        channel.basic_publish(exchange='', routing_key='app_q', body='app_upload,' + app_title)
-        print("RABBITMQ,", 'app_upload,' + app_title)
-        connection.close()
+        print('upload completed')
+        # time.sleep(3)
+        #
+        # connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
+        # channel = connection.channel()
+        # channel.queue_declare(queue='app_q')
+        # channel.basic_publish(exchange='', routing_key='app_q', body='app_upload,' + app_title)
+        # print("RABBITMQ,", 'app_upload,' + app_title)
+        # connection.close()
 
     elif msg.topic == 'control/motor/00001214':
         # rabbit
