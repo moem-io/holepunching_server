@@ -25,8 +25,6 @@ def temperatureFromSky():
     print('temperature : ', temp)
     return temp
 
-
-
 # motor_pre
 import threading
 import pika
@@ -60,7 +58,7 @@ def motorRun(angle=90):
     connection.close()
     #todo 같으면 아무것도 안함
 
-rabbit_app_id = 34
+rabbit_app_id = 5
 
 # rabbit pre
 from app.models.app_model import AppModel
@@ -87,7 +85,6 @@ def callback(ch, method, properties, body):
             connection.close()
             print('get'+str(rabbit_app_id))
 
-
 def rabbit():
     global connection
     global channel
@@ -99,8 +96,8 @@ def rabbit():
     print(' [*] Waiting for messages. To exit press CTRL+C')
     channel.start_consuming()
 
-pt2 = threading.Thread(target=rabbit)
-pt2.start()
+pt = threading.Thread(target=rabbit)
+pt.start()
 
 
 print('기상청 온도로 모터 돌리기')
@@ -108,4 +105,4 @@ while SW:
   if temperatureFromSky() > 18:
     motorRun(0)
   else:
-    motorRun(270)
+    motorRun(255)

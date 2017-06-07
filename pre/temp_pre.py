@@ -22,4 +22,3 @@ def temperatureFromSky():
             temp = i['obsrValue']
     print('temperature : ', temp)
     return temp
-

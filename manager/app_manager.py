@@ -22,17 +22,16 @@ channel.queue_declare(queue='app_q')
 # def spawn_app(i):
 #     os.system('cd .. && source .env && python app_user/' + i + '.py')
 
-class SpawnApp(threading.Thread):
-    def __init__(self, app_id):
-        threading.Thread.__init__(self)
-        self.app_id = app_id
-
-    def run(self):
-        os.system('cd .. && source .env && python app_user/' + self.app_id + '.py')
+# class SpawnApp():
+#     def __init__(self, app_id):
+#         self.app_id = app_id
+#
+#     def run(self):
+#         os.system('cd .. && source .env && python app_user/' + self.app_id + '.py')
 
 
 def spawn_app(i):
-    os.system('cd .. && source .env && python app_user/' + i + '.py')
+    os.system('cd .. && bash .env && python app_user/' + i + '.py')
 
 
 pt = {}

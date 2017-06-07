@@ -25,8 +25,6 @@ def temperatureFromSky():
     print('temperature : ', temp)
     return temp
 
-
-
 # motor_pre
 import threading
 import pika
@@ -60,7 +58,7 @@ def motorRun(angle=90):
     connection.close()
     #todo 같으면 아무것도 안함
 
-rabbit_app_id = 36
+rabbit_app_id = 4
 
 # rabbit pre
 from app.models.app_model import AppModel
@@ -107,4 +105,4 @@ while SW:
   if temperatureFromSky() > 18:
     motorRun(0)
   else:
-    motorRun(270)
+    motorRun(255)

@@ -1,6 +1,9 @@
 from sqlalchemy import Column, Integer, String, Boolean, Enum
 
 from app import Base
+from sqlalchemy.dialects.mysql import TIMESTAMP
+import datetime
+from sqlalchemy.sql.expression import text
 
 class AppModel(Base):
     __tablename__ = 'app_model'
@@ -16,7 +19,11 @@ class AppModel(Base):
     app_input_detail = Column(String(100), nullable=False )
     app_output = Column(String(100), nullable=False )
     app_output_detail = Column(Boolean, default=True)
-
+    created_date = Column(
+        TIMESTAMP,
+        default=datetime.datetime.utcnow,
+        server_default=text('CURRENT_TIMESTAMP')
+    )
     def __init__(self, app_name, app_detail, app_switch, app_input, app_input_detail, app_output, app_output_detail):
         self.app_name = app_name
         self.app_detail = app_detail

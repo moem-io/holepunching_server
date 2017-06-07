@@ -25,8 +25,6 @@ def temperatureFromSky():
     print('temperature : ', temp)
     return temp
 
-
-
 # motor_pre
 import threading
 import pika
@@ -40,8 +38,8 @@ from app.models.sensor import Sensors
 from app import session
 
 # motor
-def motorRun(angle=90):
-    print('motor angle', angle)
+def ledRun(input=90):
+    print('led input', input)
     db = session.query(Sensors).all()
     # print(db)
 
@@ -52,15 +50,15 @@ def motorRun(angle=90):
     # rabbit
     connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
     channel = connection.channel()
-    channel.queue_declare(queue='motor_q')
+    channel.queue_declare(queue='led_q')
     channel.basic_publish(exchange='',
-                          routing_key='motor_q',
-                          body='1'+','+str(angle))
-    print("RABBITMQ, motor queue, Send "+str(angle))
+                          routing_key='led_q',
+                          body='1'+','+str(input))
+    print("RABBITMQ, motor queue, Send "+str(input))
     connection.close()
     #todo 같으면 아무것도 안함
 
-rabbit_app_id = 35
+rabbit_app_id = 1
 
 # rabbit pre
 from app.models.app_model import AppModel
@@ -105,6 +103,6 @@ pt.start()
 print('기상청 온도로 모터 돌리기')
 while SW:
   if temperatureFromSky() > 18:
-    motorRun(0)
+    ledRun(0)
   else:
-    motorRun(270)
+    ledRun(255)

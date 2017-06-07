@@ -13,7 +13,7 @@ print(app_origin)
 pre = ''
 # print(app_origin.count('temp')
 if app_origin.count('temperatureFromSky()'):
-    pre += open('weather_pre.py', 'r').read()+'\n\n'
+    pre += open('temp_pre.py', 'r').read()+'\n\n'
     # location = app_origin.find('temp')
     # print(location)
 
