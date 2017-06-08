@@ -10,8 +10,10 @@ from app.models.nodes import Nodes
 from app.models.sensor import Sensors
 from app import session
 
+
 # motor
 def motorRun(angle=90):
+    global rabbit_app_id
     print('motor angle', angle)
     db = session.query(Sensors).all()
     # print(db)
@@ -26,7 +28,7 @@ def motorRun(angle=90):
     channel.queue_declare(queue='motor_q')
     channel.basic_publish(exchange='',
                           routing_key='motor_q',
-                          body='1'+','+str(angle))
+                          body=str(rabbit_app_id)+','+str(angle)+',motor_q')
     print("RABBITMQ, motor queue, Send "+str(angle))
     connection.close()
     #todo 같으면 아무것도 안함

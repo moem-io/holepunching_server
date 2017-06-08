@@ -2,6 +2,7 @@ import paho.mqtt.client as mqtt
 import pika
 import time
 from app.models.app_model import AppModel
+from app.models.app_setting import AppSetting
 from app import session
 import json
 from requests import post
@@ -11,15 +12,18 @@ from manager.make_app import getAppModi
 from manager.make_app import AlchemyEncoder
 
 api_url = API_URL
-
+api_url = 'http://127.0.0.1:5000/'
 
 def on_connect(client, userdata, rc):
     print('connected with result' + str(rc))
-    client.subscribe('control/motor/00001214')
     client.subscribe('control/app/00001214')
+    client.subscribe('control/motor/00001214')
+    client.subscribe('control/led/00001214')
     client.subscribe('app/upload')
     client.subscribe('app/upload/00001214')
     client.subscribe('app/switch_toggle/00001214')
+    client.subscribe('app/output/00001214')
+    client.subscribe('app/setting/00001214')
 
 
 def on_message(client, userdata, msg):
@@ -70,6 +74,14 @@ def on_message(client, userdata, msg):
         connection.close()
 
     elif msg.topic == 'control/led/00001214':
+        data = msg.payload.decode().split(',')
+        app_id = data[0]
+        query = session.query(AppModel).filter_by(app_id=app_id).first()
+        query.app_output_detail = data[1]
+        session.commit()
+
+        res = post(api_url+'app/save/one', data=json.dumps(query, cls=AlchemyEncoder))
+
         # rabbit
         connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
         channel = connection.channel()
@@ -78,10 +90,9 @@ def on_message(client, userdata, msg):
         print("RABBITMQ, Send " + str(msg.payload))
         connection.close()
 
-
     elif msg.topic == 'app/switch_toggle/00001214':
-        id = msg.payload.decode()
-        query = session.query(AppModel).filter_by(id=id).first()
+        app_id = msg.payload.decode()
+        query = session.query(AppModel).filter_by(app_id=app_id).first()
 
         # print('query1', (query.app_switch))
         if query:
@@ -91,8 +102,11 @@ def on_message(client, userdata, msg):
                 query.app_switch = True
             session.commit()
 
-            c = session.query(AppModel).order_by('id').all()
-            res = post(api_url + 'app/save', data=json.dumps(c, cls=AlchemyEncoder))
+            # c = session.query(AppModel).order_by('id').all()
+            # res = post(api_url + 'app/save', data=json.dumps(c, cls=AlchemyEncoder))
+            # print(res)
+
+            res = post(api_url + 'app/save/one', data=json.dumps(query, cls=AlchemyEncoder))
             print(res)
 
             # rabbit
@@ -103,6 +117,32 @@ def on_message(client, userdata, msg):
                                   body='app_switch_toggle,' + msg.payload.decode() + ',' + str(query.app_switch))
             print("RABBITMQ, Send " + str(msg.payload))
             connection.close()
+
+    elif msg.topic == 'app/output/00001214':
+        data = msg.payload.decode().split(',')
+        app_id = data[0]
+        query = session.query(AppModel).filter_by(app_id=app_id).first()
+        query.app_output_detail = data[1]
+        session.commit()
+
+        res = post(api_url + 'app/save/one', data=json.dumps(query, cls=AlchemyEncoder))
+
+        # rabbit
+        connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
+        channel = connection.channel()
+        channel.queue_declare(queue=data[2])
+        channel.basic_publish(exchange='', routing_key=data[2], body=msg.payload.decode())
+        print("RABBITMQ, Send " + str(msg.payload))
+        connection.close()
+
+    elif msg.topic == 'app/setting/00001214':
+
+        data = msg.payload.decode().split(',')
+        app_id = data[0]
+
+        session.query(AppSetting).filter_by(app_id=app_id).delete()
+        session.add(AppSetting(app_id, data[1], data[2], data[3], data[4]))
+        session.commit()
 
 
         # time.sleep(1) 얘는 프로세스 자체 멈추니까 웹에 반영도 느려져..안돼

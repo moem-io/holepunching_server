@@ -1,4 +1,4 @@
-# weather_pre
+# humidityFromSky
 from requests import get
 import json
 import time

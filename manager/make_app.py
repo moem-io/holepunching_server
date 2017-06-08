@@ -7,6 +7,7 @@ from sqlalchemy.ext.declarative import DeclarativeMeta
 
 from pre.temp_pre import *
 from pre.humi_pre import *
+from app.models.app_setting import AppSetting
 
 api_url = API_URL
 
@@ -28,7 +29,9 @@ class AlchemyEncoder(json.JSONEncoder):
 
         return json.JSONEncoder.default(self, obj)
 
+
 def getTemp():
+    temp = 20
     res = get('https://api.moem.io/outside/weather')
     js = json.loads(res.text)
     for i in js['json_list']:
@@ -36,13 +39,61 @@ def getTemp():
             temp = i['obsrValue']
     return temp
 
+
 def getHumi():
+    temp = 20
     res = get('https://api.moem.io/outside/weather')
     js = json.loads(res.text)
     for i in js['json_list']:
         if i['category'] == 'REH':
             temp = i['obsrValue']
     return temp
+
+
+def getSKY():
+    temp = None
+    str = ''
+    res = get('https://api.moem.io/outside/weather')
+    js = json.loads(res.text)
+    for i in js['json_list']:
+        if i['category'] == 'SKY':
+            temp = i['obsrValue']
+    if temp == 1:
+        str += '1(맑음)'
+    elif temp == 2:
+        str += '2(구름 조금)'
+    elif temp == 3:
+        str += '3(구름 많음)'
+    elif temp == 4:
+        str += '4(흐림)'
+    return str
+
+
+def getPTY():
+    temp = None
+    str = ''
+    res = get('https://api.moem.io/outside/weather')
+    js = json.loads(res.text)
+    for i in js['json_list']:
+        if i['category'] == 'PTY':
+            temp = i['obsrValue']
+    if temp == 0:
+        str += '0(없음)'
+    elif temp == 1:
+        str += '1(비)'
+    elif temp == 2:
+        str += '2(비/눈)'
+    elif temp == 3:
+        str += '3(눈)'
+    return str
+
+
+def mise(cate):
+    res = get('https://api.moem.io/outside/mise')
+    js = json.loads(res.text)
+    first = js['json_list'][0]
+    return str(first[cate])
+
 
 def getAppModi(app_origin):
     # 가져온 정보
@@ -52,6 +103,7 @@ def getAppModi(app_origin):
     # app_sub = app[2]
 
     app_content = app[2]
+
     # print('app_title', app_title)
     print('app_content', app_content)
 
@@ -65,48 +117,113 @@ def getAppModi(app_origin):
     input_detail = ''
     output = ''
     output_meta = ''
-    output_detail = False
+    output_detail = None
 
     # input
     if app_content.count('temperatureFromSky()'):
         pre += open('pre/temp_pre.py', 'r').read() + '\n\n'
         app_input += '기상청 온도 및 습도'
-        input_detail = "[{'icon': 'sun icon', 'value': " + "'" + str(
+        input_detail = "[{'icon': 'sun icon', 'value': '온도 : " + str(
             getTemp()) + "°C'}, {'icon': 'theme icon', 'value': '습도 : " + str(getHumi()) + "%'}]"
-
     elif app_content.count('humidityFromSky()'):
         pre += open('pre/humi_pre.py', 'r').read() + '\n\n'
         app_input += '기상청 온도 및 습도'
-        input_detail = "[{'icon': 'sun icon', 'value': " + "'" + str(
+        input_detail = "[{'icon': 'sun icon', 'value': 온도 : '" + str(
             getTemp()) + "°C'}, {'icon': 'theme icon', 'value': '습도 : " + str(getHumi()) + "%'}]"
+    elif app_content.count('SKYFromSky()'):
+        pre += open('pre/sky_pre.py', 'r').read() + '\n\n'
+        app_input += '하늘 상태 및 강수 형태'
+        input_detail = "[{'icon': 'sun icon', 'value': '하늘 : " + getSKY() + "'}, {'icon': 'umbrella  icon', 'value': '강수 : " + getPTY() + "'}]"
+    elif app_content.count('PTYFromSky()'):
+        pre += open('pre/pty_pre.py', 'r').read() + '\n\n'
+        app_input += '하늘 상태 및 강수 형태'
+        input_detail = "[{'icon': 'sun icon', 'value': '하늘 : " + getSKY() + "'}, {'icon': 'umbrella  icon', 'value': '강수 : " + getPTY() + "'}]"
+
+    elif app_content.count('PM10FromSky()'):
+        pre += open('pre/PM10_pre.py', 'r').read() + '\n\n'
+        app_input += '미세먼지(10㎛)'
+        input_detail = "[{'icon': 'certificate icon', 'value': ' : " + mise('PM10') + "㎍/㎥'}]"
+    elif app_content.count('PM25FromSky()'):
+        pre += open('pre/PM25_pre.py', 'r').read() + '\n\n'
+        app_input += '초미세먼지(2.5㎛)'
+        input_detail = "[{'icon': 'certificate icon', 'value': '" + mise('PM25') + "㎍/㎥'}]"
+    elif app_content.count('O3FromSky()'):
+        pre += open('pre/O3_pre.py', 'r').read() + '\n\n'
+        app_input += '오존농도(ppm)'
+        input_detail = "[{'icon': 'certificate icon', 'value': '" + mise('O3') + "ppm'}]"
+
+    # sensor
+    elif app_content.count('soilHumidity()'):
+        pre += open('pre/soil_pre.py', 'r').read() + '\n\n'
+        app_input += '토양 습도 센서'
+        input_detail = "[{'icon': 'theme icon', 'value': '습도 : " + str(getTemp()) + "%'}]"
+    elif app_content.count('temperatureFromSensor()'):
+        pre += open('pre/temp_sensor_pre.py', 'r').read() + '\n\n'
+        app_input += '온습도 센서'
+        input_detail = "[{'icon': 'sun icon', 'value': '온도 : " + str(
+            getTemp()) + "°C'}, {'icon': 'theme icon', 'value': '습도 : " + str(getHumi()) + "%'}]"
+    elif app_content.count('humidityFromSensor()'):
+        pre += open('pre/humi_sensor_pre.py', 'r').read() + '\n\n'
+        app_input += '온습도 센서'
+        input_detail = "[{'icon': 'sun icon', 'value': '온도 : " + str(
+            getTemp()) + "°C'}, {'icon': 'theme icon', 'value': '습도 : " + str(getHumi()) + "%'}]"
+    #
+    elif app_content.count('recognizeHuman()'):
+        pre += open('pre/recog_human_pre.py', 'r').read() + '\n\n'
+        app_input += '사람 인식'
+        input_detail = "[{'icon': 'add user icon', 'value': '사람" + '' + " 인식'}]"
+    elif app_content.count('clapCount()'):
+        pre += open('pre/clap_cnt_pre.py', 'r').read() + '\n\n'
+        app_input += '박수 횟수'
+        input_detail = "[{'icon': 'sign language icon', 'value': '횟수 : " + str(
+            getTemp()) + "번'}, {'icon': 'bullseye icon', 'value': '세기 : " + str(getHumi()) + "%'}]"
+    elif app_content.count('checkButtonCount()'):
+        pre += open('pre/btn_cnt_pre.py', 'r').read() + '\n\n'
+        app_input += '버튼 눌림 횟수'
+        input_detail = "[{'icon': 'hand pointer icon', 'value': '버튼 " + str(getTemp()) + "번 눌림'}]"
 
     # output
-    if app_content.count('ledRun'):
-        pre += open('pre/led_pre.py', 'r').read() + '\n\n'
-        output += 'LED'
-    elif app_content.count('motorRun'):
+    if app_content.count('motorRun'):
         pre += open('pre/motor_pre.py', 'r').read() + '\n\n'
         output += '서보 모터'
+        output_detail = '0'
+    elif app_content.count('remoteControl'):
+        pre += open('pre/remote_pre.py', 'r').read() + '\n\n'
+        output += '리모컨'
+        output_detail = '0'
+    elif app_content.count('ledRun'):
+        pre += open('pre/led_pre.py', 'r').read() + '\n\n'
+        output += 'LED'
+        output_detail = '000000'
+    elif app_content.count('buzzerRun'):
+        pre += open('pre/buzzer_pre.py', 'r').read() + '\n\n'
+        output += '부저'
+        output_detail = '0'
 
-    # add db
-    db_app = session.query(AppModel).filter_by(app_name=app_title).first()
-    if db_app:
-        session.query(AppModel).filter_by(app_name=app_title).delete()
-    session.add(AppModel(app_title, app_sub, app_switch, app_input, input_detail, output, output_detail))
+        # add db
+        # db_app = session.query(AppModel).filter_by(app_name=app_title).first()
+        # if db_app:
+            # session.query(AppModel).filter_by(app_name=app_title).delete()
+
+    app_id = app[3]
+    session.add(AppModel(app_id, app_title, app_sub, app_switch, app_input, input_detail, output, output_detail))
     session.commit()
 
-    query = session.query(AppModel).order_by(AppModel.id.desc()).first()
+    # query = session.query(AppModel).order_by(AppModel.id.desc()).first()
     # print('query.id', query.id)
 
+    session.add(AppSetting(app_id, 0, 0, 0, 0))
+    session.commit()
+
     # final pre
-    pre += 'rabbit_app_id = ' + str(query.id) + '\n\n'
+    pre += 'rabbit_app_id = ' + str(app_id) + '\n\n'
     pre += open('pre/rabbit_pre.py', 'r').read() + '\n\n'
 
     # 앱 변형
     modi = pre + '\n' + app_content
 
     # 완료된 앱 저장
-    f_modi = open('./app_user/' + str(query.id) + '.py', 'w')
+    f_modi = open('./app_user/' + str(app_id) + '.py', 'w')
     f_modi.write(modi)
     f_modi.close()
 

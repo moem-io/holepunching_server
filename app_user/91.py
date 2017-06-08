@@ -1,6 +1,6 @@
 #-*- coding: utf-8 -*-
 
-# weather_pre
+# temperatureFromSky
 from requests import get
 import json
 import time
@@ -25,7 +25,7 @@ def temperatureFromSky():
     print('temperature : ', temp)
     return temp
 
-# motor_pre
+# ledRun
 import threading
 import pika
 
@@ -36,29 +36,28 @@ sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 from app.models.nodes import Nodes
 from app.models.sensor import Sensors
 from app import session
+from app.models.app_setting import AppSetting
+from app.models.app_model import AppModel
 
-# motor
-def motorRun(angle=90):
-    print('motor angle', angle)
-    db = session.query(Sensors).all()
-    # print(db)
 
-    #todo 모터의 번호를 설정디비에서 가저옴
-    #todo 3번 모터의 값이 입력값과 같은지 확인
-    #todo 만약 같지 않으면 래빗엠큐로 보내고, 디비에 저장하든말든 함
+def ledRun(input=90):
+    print('led output', input)
+    global rabbit_app_id
 
-    # rabbit
-    connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
-    channel = connection.channel()
-    channel.queue_declare(queue='motor_q')
-    channel.basic_publish(exchange='',
-                          routing_key='motor_q',
-                          body='1'+','+str(angle))
-    print("RABBITMQ, motor queue, Send "+str(angle))
-    connection.close()
-    #todo 같으면 아무것도 안함
+    rgb = session.query(AppModel).filter_by(app_id=rabbit_app_id).first()
+    if not rgb == input:
+        sett = session.query(AppSetting).filter_by(app_id=rabbit_app_id).first()
+        # rabbit
+        connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
+        channel = connection.channel()
+        channel.queue_declare(queue='led_q')
+        channel.basic_publish(exchange='',
+                              routing_key='led_q',
+                              body=str(sett.out_node) + ',' + str(sett.out_sensor) + ',' + str(input))
+        print("RABBITMQ, led queue, Send " + str(input))
+        connection.close()
 
-rabbit_app_id = 5
+rabbit_app_id = 91
 
 # rabbit pre
 from app.models.app_model import AppModel
@@ -70,11 +69,16 @@ connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost')
 channel = connection.channel()
 
 SW = True
+input_sw = True
+input_val = None
+
 def callback(ch, method, properties, body):
     global SW
     global connection
     global channel
     global rabbit_app_id
+    global input_sw
+    global input_val
 
     kind = body.decode().split(',')
     if kind[0] == str(rabbit_app_id):
@@ -83,7 +87,10 @@ def callback(ch, method, properties, body):
             SW = False
             channel.close()
             connection.close()
-            print('get'+str(rabbit_app_id))
+            print('end app : '+str(rabbit_app_id))
+        elif kind[1] == 'input':
+            input_val = int(kind[2])
+            input_sw = False
 
 def rabbit():
     global connection
@@ -100,9 +107,9 @@ pt = threading.Thread(target=rabbit)
 pt.start()
 
 
-print('기상청 온도로 모터 돌리기')
+print('온습도 테스트')
 while SW:
-  if temperatureFromSky() > 18:
-    motorRun(0)
+  if temperatureFromSky() > 20:
+    ledRun(303030)
   else:
-    motorRun(255)
+    ledRun(505050)

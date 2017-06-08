@@ -1,4 +1,4 @@
-# temperatureFromSky
+# SKYFromSky
 from requests import get
 import json
 import time
@@ -7,7 +7,7 @@ import time
 # 대기 타다가 정각에 가져오는걸로 만들자
 weatherFirst = True
 
-def temperatureFromSky():
+def SKYFromSky():
     global weatherFirst
     temp = 0
     if weatherFirst:
@@ -17,8 +17,7 @@ def temperatureFromSky():
     res = get('https://api.moem.io/outside/weather')
     js = json.loads(res.text)
     for i in js['json_list']:
-        if i['category'] == 'T1H':
-            # print('temp:'+str(i['obsrValue']))
+        if i['category'] == 'SKY':
             temp = i['obsrValue']
-    print('temperature : ', temp)
+    print('sky : ', temp)
     return temp

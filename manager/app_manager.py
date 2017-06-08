@@ -24,13 +24,11 @@ channel.queue_declare(queue='app_q')
 
 
 def spawn_app(i):
-    # os.system('cd .. && source .env && python app_user/' + i + '.py')
-    os.system('bash .env && python app_user/' + i + '.py')
+    os.system('cd .. && source .env && python app_user/' + i + '.py')
+    # os.system('bash .env && python app_user/' + i + '.py')
 
 
-pt = {}
 def callback(ch, method, properties, body):
-    global pt
     print("\nRABBITMQ app_manager, Received %r" % body)
 
     kind = body.decode().split(',')

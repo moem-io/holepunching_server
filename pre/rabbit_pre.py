@@ -8,11 +8,16 @@ connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost')
 channel = connection.channel()
 
 SW = True
+input_sw = True
+input_val = None
+
 def callback(ch, method, properties, body):
     global SW
     global connection
     global channel
     global rabbit_app_id
+    global input_sw
+    global input_val
 
     kind = body.decode().split(',')
     if kind[0] == str(rabbit_app_id):
@@ -21,7 +26,10 @@ def callback(ch, method, properties, body):
             SW = False
             channel.close()
             connection.close()
-            print('get'+str(rabbit_app_id))
+            print('end app : '+str(rabbit_app_id))
+        elif kind[1] == 'input':
+            input_val = int(kind[2])
+            input_sw = False
 
 def rabbit():
     global connection

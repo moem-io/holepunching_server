@@ -12,19 +12,22 @@ class AppModel(Base):
         'mysql_charset': 'utf8',
     }
     id = Column(Integer, primary_key=True)
+    app_id = Column(Integer, nullable=False)
     app_name = Column(String(100), nullable=False )
     app_detail = Column(String(100), nullable=False )
     app_switch = Column(Boolean, default=True)
     app_input = Column(String(100), nullable=False )
     app_input_detail = Column(String(100), nullable=False )
     app_output = Column(String(100), nullable=False )
-    app_output_detail = Column(Boolean, default=True)
+    app_output_detail = Column(String(100), default=True)
     created_date = Column(
         TIMESTAMP,
         default=datetime.datetime.utcnow,
         server_default=text('CURRENT_TIMESTAMP')
     )
-    def __init__(self, app_name, app_detail, app_switch, app_input, app_input_detail, app_output, app_output_detail):
+
+    def __init__(self, app_id, app_name, app_detail, app_switch, app_input, app_input_detail, app_output, app_output_detail):
+        self.app_id = app_id
         self.app_name = app_name
         self.app_detail = app_detail
         self.app_switch = app_switch
