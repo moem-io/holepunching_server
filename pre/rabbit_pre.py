@@ -3,6 +3,9 @@ from app.models.app_model import AppModel
 import pika
 import threading
 from app import session
+from requests import post
+from config import *
+api_url = 'http://127.0.0.1:5000/'
 
 connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
 channel = connection.channel()
@@ -29,7 +32,10 @@ def callback(ch, method, properties, body):
             print('end app : '+str(rabbit_app_id))
         elif kind[1] == 'input':
             input_val = int(kind[2])
+            res = post(api_url + 'log/save', data={'data':'btn'})
+            print(res)
             input_sw = False
+
 
 def rabbit():
     global connection
