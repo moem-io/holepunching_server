@@ -1,0 +1,394 @@
+Index: pre/rabbit_pre.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- pre/rabbit_pre.py	(date 1496936714000)
++++ pre/rabbit_pre.py	(revision )
+@@ -3,6 +3,13 @@
+ import pika
+ import threading
+ from app import session
++from app.models.app_log import AppLog
++from app.models.app_setting import AppSetting
++from requests import post
++from config import *
++import json
++from manager.make_app import AlchemyEncoder
++
+ 
+ connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
+ channel = connection.channel()
+@@ -18,6 +25,7 @@
+     global rabbit_app_id
+     global input_sw
+     global input_val
++    global log_kind
+ 
+     kind = body.decode().split(',')
+     if kind[0] == str(rabbit_app_id):
+@@ -29,8 +37,21 @@
+             print('end app : '+str(rabbit_app_id))
+         elif kind[1] == 'input':
+             input_val = int(kind[2])
++            q = session.query(AppSetting).filter_by(app_id=rabbit_app_id).first()
++            in_node = q.in_node
++            in_sensor = q.in_sensor
++            content = 'Node [' + str(in_node) + ']의 Sensor[' + str(in_sensor) + ']에서 ' + \
++                      log_kind + ' ' + str(input_val) + ' 감지'
++            item = AppLog(content, rabbit_app_id, str(in_node), str(in_sensor))
++            session.add(item)
++            session.commit()
++
++            c = session.query(AppLog).order_by('id').all()
++            res = post(API_URL + 'app/log/save', data=json.dumps(c, cls=AlchemyEncoder))
++            print(res)
+             input_sw = False
+ 
++
+ def rabbit():
+     global connection
+     global channel
+Index: manager/make_app.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- manager/make_app.py	(date 1496936714000)
++++ manager/make_app.py	(revision )
+@@ -119,68 +119,83 @@
+     output_meta = ''
+     output_detail = None
+ 
++    log = None
+     # input
+     if app_content.count('temperatureFromSky()'):
+         pre += open('pre/temp_pre.py', 'r').read() + '\n\n'
+         app_input += '기상청 온도 및 습도'
+         input_detail = "[{'icon': 'sun icon', 'value': '온도 : " + str(
+             getTemp()) + "°C'}, {'icon': 'theme icon', 'value': '습도 : " + str(getHumi()) + "%'}]"
++        log = 'log_kind = '+'"온도"'
+     elif app_content.count('humidityFromSky()'):
+         pre += open('pre/humi_pre.py', 'r').read() + '\n\n'
+         app_input += '기상청 온도 및 습도'
+         input_detail = "[{'icon': 'sun icon', 'value': 온도 : '" + str(
+             getTemp()) + "°C'}, {'icon': 'theme icon', 'value': '습도 : " + str(getHumi()) + "%'}]"
++        log = 'log_kind = '+'"습도"'
+     elif app_content.count('SKYFromSky()'):
+         pre += open('pre/sky_pre.py', 'r').read() + '\n\n'
+         app_input += '하늘 상태 및 강수 형태'
+         input_detail = "[{'icon': 'sun icon', 'value': '하늘 : " + getSKY() + "'}, {'icon': 'umbrella  icon', 'value': '강수 : " + getPTY() + "'}]"
++        log = 'log_kind = '+'"하늘 상태"'
+     elif app_content.count('PTYFromSky()'):
+         pre += open('pre/pty_pre.py', 'r').read() + '\n\n'
+         app_input += '하늘 상태 및 강수 형태'
+         input_detail = "[{'icon': 'sun icon', 'value': '하늘 : " + getSKY() + "'}, {'icon': 'umbrella  icon', 'value': '강수 : " + getPTY() + "'}]"
++        log = 'log_kind = '+'"강수 형태"'
+ 
+     elif app_content.count('PM10FromSky()'):
+         pre += open('pre/PM10_pre.py', 'r').read() + '\n\n'
+         app_input += '미세먼지(10㎛)'
+         input_detail = "[{'icon': 'certificate icon', 'value': ' : " + mise('PM10') + "㎍/㎥'}]"
++        log = 'log_kind = '+'"미세먼지"'
+     elif app_content.count('PM25FromSky()'):
+         pre += open('pre/PM25_pre.py', 'r').read() + '\n\n'
+         app_input += '초미세먼지(2.5㎛)'
++        log = 'log_kind = '+'"초미세먼지"'
+         input_detail = "[{'icon': 'certificate icon', 'value': '" + mise('PM25') + "㎍/㎥'}]"
+     elif app_content.count('O3FromSky()'):
+         pre += open('pre/O3_pre.py', 'r').read() + '\n\n'
+         app_input += '오존농도(ppm)'
+         input_detail = "[{'icon': 'certificate icon', 'value': '" + mise('O3') + "ppm'}]"
++        log = 'log_kind = ' + '"오존농도"'
+ 
+     # sensor
+     elif app_content.count('soilHumidity()'):
+         pre += open('pre/soil_pre.py', 'r').read() + '\n\n'
+         app_input += '토양 습도 센서'
+         input_detail = "[{'icon': 'theme icon', 'value': '습도 : " + str(getTemp()) + "%'}]"
++        log = 'log_kind = ' + '"토양습도"'
+     elif app_content.count('temperatureFromSensor()'):
+         pre += open('pre/temp_sensor_pre.py', 'r').read() + '\n\n'
+         app_input += '온습도 센서'
+         input_detail = "[{'icon': 'sun icon', 'value': '온도 : " + str(
+             getTemp()) + "°C'}, {'icon': 'theme icon', 'value': '습도 : " + str(getHumi()) + "%'}]"
++        log = 'log_kind = ' + '"온도"'
+     elif app_content.count('humidityFromSensor()'):
+         pre += open('pre/humi_sensor_pre.py', 'r').read() + '\n\n'
+         app_input += '온습도 센서'
+         input_detail = "[{'icon': 'sun icon', 'value': '온도 : " + str(
+             getTemp()) + "°C'}, {'icon': 'theme icon', 'value': '습도 : " + str(getHumi()) + "%'}]"
++        log = 'log_kind = ' + '"습도"'
++
+     #
+     elif app_content.count('recognizeHuman()'):
+         pre += open('pre/recog_human_pre.py', 'r').read() + '\n\n'
+         app_input += '사람 인식'
+         input_detail = "[{'icon': 'add user icon', 'value': '사람" + '' + " 인식'}]"
++        log = 'log_kind = ' + '"사람"'
+     elif app_content.count('clapCount()'):
+         pre += open('pre/clap_cnt_pre.py', 'r').read() + '\n\n'
+         app_input += '박수 횟수'
+         input_detail = "[{'icon': 'sign language icon', 'value': '횟수 : " + str(
+             getTemp()) + "번'}, {'icon': 'bullseye icon', 'value': '세기 : " + str(getHumi()) + "%'}]"
++        log = 'log_kind = ' + '"박수"'
+     elif app_content.count('checkButtonCount()'):
+         pre += open('pre/btn_cnt_pre.py', 'r').read() + '\n\n'
+         app_input += '버튼 눌림 횟수'
+-        input_detail = "[{'icon': 'hand pointer icon', 'value': '버튼 " + str(getTemp()) + "번 눌림'}]"
++        input_detail = "[{'icon': 'hand pointer icon', 'value': '횟수 : " + str(1) + "번'}]"
++        log = 'log_kind = ' + '"버튼 눌림"'
+ 
+     # output
+     if app_content.count('motorRun'):
+@@ -216,6 +231,7 @@
+     session.commit()
+ 
+     # final pre
++    pre += log + '\n\n'
+     pre += 'rabbit_app_id = ' + str(app_id) + '\n\n'
+     pre += open('pre/rabbit_pre.py', 'r').read() + '\n\n'
+ 
+Index: app_user/91.py
+===================================================================
+--- app_user/91.py	(date 1496936714000)
++++ app_user/91.py	(date 1496936714000)
+@@ -1,115 +0,0 @@
+-#-*- coding: utf-8 -*-
+-
+-# temperatureFromSky
+-from requests import get
+-import json
+-import time
+-
+-# 기상청 온도는 1시간 단위로 변함(30~40분 사이에 뜸)
+-# 대기 타다가 정각에 가져오는걸로 만들자
+-weatherFirst = True
+-
+-def temperatureFromSky():
+-    global weatherFirst
+-    temp = 0
+-    if weatherFirst:
+-        weatherFirst = False
+-    else:
+-        time.sleep(10)
+-    res = get('https://api.moem.io/outside/weather')
+-    js = json.loads(res.text)
+-    for i in js['json_list']:
+-        if i['category'] == 'T1H':
+-            # print('temp:'+str(i['obsrValue']))
+-            temp = i['obsrValue']
+-    print('temperature : ', temp)
+-    return temp
+-
+-# ledRun
+-import threading
+-import pika
+-
+-# db
+-import os
+-import sys
+-sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
+-from app.models.nodes import Nodes
+-from app.models.sensor import Sensors
+-from app import session
+-from app.models.app_setting import AppSetting
+-from app.models.app_model import AppModel
+-
+-
+-def ledRun(input=90):
+-    print('led output', input)
+-    global rabbit_app_id
+-
+-    rgb = session.query(AppModel).filter_by(app_id=rabbit_app_id).first()
+-    if not rgb == input:
+-        sett = session.query(AppSetting).filter_by(app_id=rabbit_app_id).first()
+-        # rabbit
+-        connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
+-        channel = connection.channel()
+-        channel.queue_declare(queue='led_q')
+-        channel.basic_publish(exchange='',
+-                              routing_key='led_q',
+-                              body=str(sett.out_node) + ',' + str(sett.out_sensor) + ',' + str(input))
+-        print("RABBITMQ, led queue, Send " + str(input))
+-        connection.close()
+-
+-rabbit_app_id = 91
+-
+-# rabbit pre
+-from app.models.app_model import AppModel
+-import pika
+-import threading
+-from app import session
+-
+-connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
+-channel = connection.channel()
+-
+-SW = True
+-input_sw = True
+-input_val = None
+-
+-def callback(ch, method, properties, body):
+-    global SW
+-    global connection
+-    global channel
+-    global rabbit_app_id
+-    global input_sw
+-    global input_val
+-
+-    kind = body.decode().split(',')
+-    if kind[0] == str(rabbit_app_id):
+-        # query = session.query(AppModel).filter_by(id=kind[0]).first()
+-        if 'False' == kind[1]:
+-            SW = False
+-            channel.close()
+-            connection.close()
+-            print('end app : '+str(rabbit_app_id))
+-        elif kind[1] == 'input':
+-            input_val = int(kind[2])
+-            input_sw = False
+-
+-def rabbit():
+-    global connection
+-    global channel
+-    global rabbit_app_id
+-
+-    channel.queue_declare(queue='app_'+str(rabbit_app_id))
+-    channel.basic_consume(callback, queue='app_'+str(rabbit_app_id), no_ack=True)
+-
+-    print(' [*] Waiting for messages. To exit press CTRL+C')
+-    channel.start_consuming()
+-
+-pt = threading.Thread(target=rabbit)
+-pt.start()
+-
+-
+-print('온습도 테스트')
+-while SW:
+-  if temperatureFromSky() > 20:
+-    ledRun(303030)
+-  else:
+-    ledRun(505050)
+Index: app_user/1.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app_user/1.py	(date 1496936714000)
++++ app_user/1.py	(revision )
+@@ -25,7 +25,7 @@
+     print('temperature : ', temp)
+     return temp
+ 
+-# ledRun
++# motor_pre
+ import threading
+ import pika
+ 
+@@ -36,26 +36,29 @@
+ from app.models.nodes import Nodes
+ from app.models.sensor import Sensors
+ from app import session
+-from app.models.app_setting import AppSetting
+-from app.models.app_model import AppModel
+ 
+ 
+-def ledRun(input=90):
+-    print('led output', input)
++# motor
++def motorRun(angle=90):
+     global rabbit_app_id
++    print('motor angle', angle)
++    db = session.query(Sensors).all()
++    # print(db)
+ 
+-    rgb = session.query(AppModel).filter_by(app_id=rabbit_app_id).first()
+-    if not rgb == input:
+-        sett = session.query(AppSetting).filter_by(app_id=rabbit_app_id).first()
+-        # rabbit
+-        connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
+-        channel = connection.channel()
+-        channel.queue_declare(queue='led_q')
+-        channel.basic_publish(exchange='',
+-                              routing_key='led_q',
+-                              body=str(sett.out_node) + ',' + str(sett.out_sensor) + ',' + str(input))
+-        print("RABBITMQ, led queue, Send " + str(input))
+-        connection.close()
++    #todo 모터의 번호를 설정디비에서 가저옴
++    #todo 3번 모터의 값이 입력값과 같은지 확인
++    #todo 만약 같지 않으면 래빗엠큐로 보내고, 디비에 저장하든말든 함
++
++    # rabbit
++    connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
++    channel = connection.channel()
++    channel.queue_declare(queue='motor_q')
++    channel.basic_publish(exchange='',
++                          routing_key='motor_q',
++                          body=str(rabbit_app_id)+','+str(angle)+',motor_q')
++    print("RABBITMQ, motor queue, Send "+str(angle))
++    connection.close()
++    #todo 같으면 아무것도 안함
+ 
+ rabbit_app_id = 1
+ 
+@@ -107,9 +110,9 @@
+ pt.start()
+ 
+ 
+-print('온습도 테스트')
++print('기상청 온도로 모터 제어')
+ while SW:
+   if temperatureFromSky() > 20:
+-    ledRun(303030)
++    motorRun(20)
+   else:
+-    ledRun(505050)
++    motorRun(50)
+Index: app/models/app_log.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/models/app_log.py	(date 1496936714000)
++++ app/models/app_log.py	(revision )
+@@ -2,6 +2,9 @@
+ from sqlalchemy.orm import relationship
+ 
+ from app import Base
++from sqlalchemy.dialects.mysql import TIMESTAMP
++import datetime
++from sqlalchemy.sql.expression import text
+ 
+ class AppLog(Base):
+     __tablename__ = 'app_log'
+@@ -10,16 +13,21 @@
+         'mysql_charset': 'utf8',
+     }
+     id = Column(Integer, primary_key=True)
+-    log_time = Column(String(100), nullable=False )
+-    log_content = Column(String(100), nullable=False )
++    log_content = Column(String(100), nullable=False)
++    app_id = Column(Integer, nullable=False)
++    node = Column(String(100), nullable=False)
++    sensor = Column(String(100), nullable=False)
+ 
+-    app_id = Column(Integer, ForeignKey('app_model.id'))
+-    app_model = relationship('AppModel', foreign_keys=[app_id])
++    created_date = Column(
++        String(100),
++        default=datetime.datetime.utcnow
++    )
+ 
+-    def __init__(self, log_time, log_content, app_id):
+-        self.log_time = log_time
++    def __init__(self, log_content, app_id, node, sensor):
+         self.log_content = log_content
+         self.app_id = app_id
++        self.node = node
++        self.sensor = sensor
+ 
+     def __repr__(self):
+-        return "<AppLog('%s', '%s', '%s')>" % (self.id, self.log_time, self.log_content)
+\ No newline at end of file
++        return "<AppLog('%s', '%s')>" % (self.id, self.log_content)
+\ No newline at end of file

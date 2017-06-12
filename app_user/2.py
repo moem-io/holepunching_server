@@ -47,7 +47,7 @@ def motorRun(angle=90):
 
 log_kind = "버튼 눌림"
 
-rabbit_app_id = 1
+rabbit_app_id = 2
 
 # rabbit pre
 from app.models.app_model import AppModel
@@ -118,7 +118,7 @@ pt = threading.Thread(target=rabbit)
 pt.start()
 
 
-print('버튼으로 모터 제어')
+print('ss')
 while SW:
   if checkButtonCount() > 20:
     motorRun(0)

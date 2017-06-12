@@ -18,9 +18,8 @@ class AppSetting(Base):
     out_node = Column(Integer, nullable=False )
     out_sensor = Column(Integer, nullable=False )
     created_date = Column(
-        TIMESTAMP,
+        String(100),
         default=datetime.datetime.utcnow,
-        server_default=text('CURRENT_TIMESTAMP')
     )
 
     def __init__(self, app_id, in_node, in_sensor, out_node, out_sensor):

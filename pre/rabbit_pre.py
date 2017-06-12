@@ -3,9 +3,13 @@ from app.models.app_model import AppModel
 import pika
 import threading
 from app import session
+from app.models.app_log import AppLog
+from app.models.app_setting import AppSetting
 from requests import post
 from config import *
-api_url = 'http://127.0.0.1:5000/'
+import json
+from manager.make_app import AlchemyEncoder
+
 
 connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
 channel = connection.channel()
@@ -21,6 +25,8 @@ def callback(ch, method, properties, body):
     global rabbit_app_id
     global input_sw
     global input_val
+    global log_kind
+    global api_url
 
     kind = body.decode().split(',')
     if kind[0] == str(rabbit_app_id):
@@ -32,7 +38,17 @@ def callback(ch, method, properties, body):
             print('end app : '+str(rabbit_app_id))
         elif kind[1] == 'input':
             input_val = int(kind[2])
-            res = post(api_url + 'log/save', data={'data':'btn'})
+            q = session.query(AppSetting).filter_by(app_id=rabbit_app_id).first()
+            in_node = q.in_node
+            in_sensor = q.in_sensor
+            content = 'Node [' + str(in_node) + ']의 Sensor[' + str(in_sensor) + ']에서 ' + \
+                      log_kind + ' ' + str(input_val) + ' 감지'
+            item = AppLog(content, rabbit_app_id, str(in_node), str(in_sensor))
+            session.add(item)
+            session.commit()
+
+            c = session.query(AppLog).order_by('id').all()
+            res = post(api_url + 'app/log/save', data=json.dumps(c, cls=AlchemyEncoder))
             print(res)
             input_sw = False
 

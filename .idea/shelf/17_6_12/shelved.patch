@@ -1,0 +1,128 @@
+Index: sub_mq_manager.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- sub_mq_manager.py	(date 1496968997000)
++++ sub_mq_manager.py	(revision )
+@@ -12,7 +12,7 @@
+ from manager.make_app import AlchemyEncoder
+ 
+ api_url = API_URL
+-api_url = 'http://127.0.0.1:5000/'
++# api_url = 'http://127.0.0.1:5000/'
+ 
+ def on_connect(client, userdata, rc):
+     print('connected with result' + str(rc))
+Index: manager/make_app.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- manager/make_app.py	(date 1496968997000)
++++ manager/make_app.py	(revision )
+@@ -175,8 +175,7 @@
+     elif app_content.count('clapCount()'):
+         pre += open('pre/clap_cnt_pre.py', 'r').read() + '\n\n'
+         app_input += '박수 횟수'
+-        input_detail = "[{'icon': 'sign language icon', 'value': '횟수 : " + str(
+-            getTemp()) + "번'}, {'icon': 'bullseye icon', 'value': '세기 : " + str(getHumi()) + "%'}]"
++        input_detail = "[{'icon': 'sign language icon', 'value': '횟수 : " + "1번'}, {'icon': 'bullseye icon', 'value': '세기 : " + str(getHumi()) + "%'}]"
+     elif app_content.count('checkButtonCount()'):
+         pre += open('pre/btn_cnt_pre.py', 'r').read() + '\n\n'
+         app_input += '버튼 눌림 횟수'
+Index: app_user/1.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app_user/1.py	(date 1496968997000)
++++ app_user/1.py	(revision )
+@@ -25,7 +25,7 @@
+     print('temperature : ', temp)
+     return temp
+ 
+-# ledRun
++# motor_pre
+ import threading
+ import pika
+ 
+@@ -36,26 +36,29 @@
+ from app.models.nodes import Nodes
+ from app.models.sensor import Sensors
+ from app import session
+-from app.models.app_setting import AppSetting
+-from app.models.app_model import AppModel
+ 
+ 
+-def ledRun(input=90):
+-    print('led output', input)
++# motor
++def motorRun(angle=90):
+     global rabbit_app_id
++    print('motor angle', angle)
++    db = session.query(Sensors).all()
++    # print(db)
+ 
+-    rgb = session.query(AppModel).filter_by(app_id=rabbit_app_id).first()
+-    if not rgb == input:
+-        sett = session.query(AppSetting).filter_by(app_id=rabbit_app_id).first()
+-        # rabbit
+-        connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
+-        channel = connection.channel()
+-        channel.queue_declare(queue='led_q')
+-        channel.basic_publish(exchange='',
+-                              routing_key='led_q',
+-                              body=str(sett.out_node) + ',' + str(sett.out_sensor) + ',' + str(input))
+-        print("RABBITMQ, led queue, Send " + str(input))
+-        connection.close()
++    #todo 모터의 번호를 설정디비에서 가저옴
++    #todo 3번 모터의 값이 입력값과 같은지 확인
++    #todo 만약 같지 않으면 래빗엠큐로 보내고, 디비에 저장하든말든 함
++
++    # rabbit
++    connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
++    channel = connection.channel()
++    channel.queue_declare(queue='motor_q')
++    channel.basic_publish(exchange='',
++                          routing_key='motor_q',
++                          body=str(rabbit_app_id)+','+str(angle)+',motor_q')
++    print("RABBITMQ, motor queue, Send "+str(angle))
++    connection.close()
++    #todo 같으면 아무것도 안함
+ 
+ rabbit_app_id = 1
+ 
+@@ -64,6 +67,9 @@
+ import pika
+ import threading
+ from app import session
++from requests import post
++from config import *
++api_url = 'http://127.0.0.1:5000/'
+ 
+ connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
+ channel = connection.channel()
+@@ -90,6 +96,8 @@
+             print('end app : '+str(rabbit_app_id))
+         elif kind[1] == 'input':
+             input_val = int(kind[2])
++            res = post(api_url + 'log/save', data={'data':'btn'})
++            print(res)
+             input_sw = False
+ 
+ def rabbit():
+@@ -107,9 +115,9 @@
+ pt.start()
+ 
+ 
+-print('온습도 테스트')
++print('기상청 온도로 모터 실행')
+ while SW:
+-  if temperatureFromSky() > 20:
+-    ledRun(303030)
++  if temperatureFromSky() >= 20:
++    motorRun(0)
+   else:
+-    ledRun(505050)
++    motorRun(150)

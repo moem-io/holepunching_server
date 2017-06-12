@@ -11,7 +11,7 @@ from config import *
 from manager.make_app import getAppModi
 from manager.make_app import AlchemyEncoder
 
-api_url = API_URL
+# api_url = API_URL
 api_url = 'http://127.0.0.1:5000/'
 
 def on_connect(client, userdata, rc):

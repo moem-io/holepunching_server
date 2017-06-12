@@ -112,6 +112,7 @@ def getAppModi(app_origin):
 
     # 만약 특정 변수가 발견되면 그 변수에 맞는거 가져옴
     pre = '#-*- coding: utf-8 -*-\n\n'
+    pre += 'api_url = API_URL\n\n'
 
     app_input = ''
     input_detail = ''
@@ -119,68 +120,82 @@ def getAppModi(app_origin):
     output_meta = ''
     output_detail = None
 
+    log = None
     # input
     if app_content.count('temperatureFromSky()'):
         pre += open('pre/temp_pre.py', 'r').read() + '\n\n'
         app_input += '기상청 온도 및 습도'
         input_detail = "[{'icon': 'sun icon', 'value': '온도 : " + str(
             getTemp()) + "°C'}, {'icon': 'theme icon', 'value': '습도 : " + str(getHumi()) + "%'}]"
+        log = 'log_kind = '+'"온도"'
     elif app_content.count('humidityFromSky()'):
         pre += open('pre/humi_pre.py', 'r').read() + '\n\n'
         app_input += '기상청 온도 및 습도'
         input_detail = "[{'icon': 'sun icon', 'value': 온도 : '" + str(
             getTemp()) + "°C'}, {'icon': 'theme icon', 'value': '습도 : " + str(getHumi()) + "%'}]"
+        log = 'log_kind = '+'"습도"'
     elif app_content.count('SKYFromSky()'):
         pre += open('pre/sky_pre.py', 'r').read() + '\n\n'
         app_input += '하늘 상태 및 강수 형태'
         input_detail = "[{'icon': 'sun icon', 'value': '하늘 : " + getSKY() + "'}, {'icon': 'umbrella  icon', 'value': '강수 : " + getPTY() + "'}]"
+        log = 'log_kind = '+'"하늘 상태"'
     elif app_content.count('PTYFromSky()'):
         pre += open('pre/pty_pre.py', 'r').read() + '\n\n'
         app_input += '하늘 상태 및 강수 형태'
         input_detail = "[{'icon': 'sun icon', 'value': '하늘 : " + getSKY() + "'}, {'icon': 'umbrella  icon', 'value': '강수 : " + getPTY() + "'}]"
+        log = 'log_kind = '+'"강수 형태"'
 
     elif app_content.count('PM10FromSky()'):
         pre += open('pre/PM10_pre.py', 'r').read() + '\n\n'
         app_input += '미세먼지(10㎛)'
         input_detail = "[{'icon': 'certificate icon', 'value': ' : " + mise('PM10') + "㎍/㎥'}]"
+        log = 'log_kind = '+'"미세먼지"'
     elif app_content.count('PM25FromSky()'):
         pre += open('pre/PM25_pre.py', 'r').read() + '\n\n'
         app_input += '초미세먼지(2.5㎛)'
+        log = 'log_kind = '+'"초미세먼지"'
         input_detail = "[{'icon': 'certificate icon', 'value': '" + mise('PM25') + "㎍/㎥'}]"
     elif app_content.count('O3FromSky()'):
         pre += open('pre/O3_pre.py', 'r').read() + '\n\n'
         app_input += '오존농도(ppm)'
         input_detail = "[{'icon': 'certificate icon', 'value': '" + mise('O3') + "ppm'}]"
+        log = 'log_kind = ' + '"오존농도"'
 
     # sensor
     elif app_content.count('soilHumidity()'):
         pre += open('pre/soil_pre.py', 'r').read() + '\n\n'
         app_input += '토양 습도 센서'
         input_detail = "[{'icon': 'theme icon', 'value': '습도 : " + str(getTemp()) + "%'}]"
+        log = 'log_kind = ' + '"토양습도"'
     elif app_content.count('temperatureFromSensor()'):
         pre += open('pre/temp_sensor_pre.py', 'r').read() + '\n\n'
         app_input += '온습도 센서'
         input_detail = "[{'icon': 'sun icon', 'value': '온도 : " + str(
             getTemp()) + "°C'}, {'icon': 'theme icon', 'value': '습도 : " + str(getHumi()) + "%'}]"
+        log = 'log_kind = ' + '"온도"'
     elif app_content.count('humidityFromSensor()'):
         pre += open('pre/humi_sensor_pre.py', 'r').read() + '\n\n'
         app_input += '온습도 센서'
         input_detail = "[{'icon': 'sun icon', 'value': '온도 : " + str(
             getTemp()) + "°C'}, {'icon': 'theme icon', 'value': '습도 : " + str(getHumi()) + "%'}]"
+        log = 'log_kind = ' + '"습도"'
+
     #
     elif app_content.count('recognizeHuman()'):
         pre += open('pre/recog_human_pre.py', 'r').read() + '\n\n'
         app_input += '사람 인식'
         input_detail = "[{'icon': 'add user icon', 'value': '사람" + '' + " 인식'}]"
+        log = 'log_kind = ' + '"사람"'
     elif app_content.count('clapCount()'):
         pre += open('pre/clap_cnt_pre.py', 'r').read() + '\n\n'
         app_input += '박수 횟수'
-        input_detail = "[{'icon': 'sign language icon', 'value': '횟수 : " + str(
-            getTemp()) + "번'}, {'icon': 'bullseye icon', 'value': '세기 : " + str(getHumi()) + "%'}]"
+        input_detail = "[{'icon': 'sign language icon', 'value': '횟수 : " + "1번'}, {'icon': 'bullseye icon', 'value': '세기 : " + str(getHumi()) + "%'}]"
+        log = 'log_kind = ' + '"박수"'
     elif app_content.count('checkButtonCount()'):
         pre += open('pre/btn_cnt_pre.py', 'r').read() + '\n\n'
         app_input += '버튼 눌림 횟수'
-        input_detail = "[{'icon': 'hand pointer icon', 'value': '버튼 " + str(getTemp()) + "번 눌림'}]"
+        input_detail = "[{'icon': 'hand pointer icon', 'value': '횟수 : " + str(1) + "번'}]"
+        log = 'log_kind = ' + '"버튼 눌림"'
 
     # output
     if app_content.count('motorRun'):
@@ -216,6 +231,7 @@ def getAppModi(app_origin):
     session.commit()
 
     # final pre
+    pre += log + '\n\n'
     pre += 'rabbit_app_id = ' + str(app_id) + '\n\n'
     pre += open('pre/rabbit_pre.py', 'r').read() + '\n\n'
 
