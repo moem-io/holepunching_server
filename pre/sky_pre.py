@@ -9,11 +9,14 @@ weatherFirst = True
 
 def SKYFromSky():
     global weatherFirst
+    global SW
     temp = 0
     if weatherFirst:
         weatherFirst = False
     else:
         time.sleep(10)
+    if not SW:
+        return 0
     res = get('https://api.moem.io/outside/weather')
     js = json.loads(res.text)
     for i in js['json_list']:

@@ -7,7 +7,7 @@ from multiprocessing import Process
 connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
 channel = connection.channel()
 
-channel.queue_declare(queue='app_q')
+channel.queue_declare(queue='app_manage')
 
 
 # channel.queue_declare(queue='app_q') # 한개만 됨
@@ -29,10 +29,10 @@ def spawn_app(i):
 
 
 def callback(ch, method, properties, body):
-    print("\nRABBITMQ app_manager, Received %r" % body)
+    # print("\nRABBITMQ app_manager, Received %r" % body)
 
     kind = body.decode().split(',')
-    print(kind)
+    # print(kind)
     if kind[0] == 'app_upload':
         print('uploading..')
         # os.system('ls')
@@ -59,11 +59,11 @@ def callback(ch, method, properties, body):
         if 'False' == kind[2]:
             conn = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
             ch = conn.channel()
-            ch.queue_declare(queue='app_'+(kind[1]))
-            ch.basic_publish(exchange='', routing_key='app_'+(kind[1]), body=(kind[1])+','+(kind[2]))
-            print("RABBITMQ, Send " + str(kind[1]))
+            ch.queue_declare(queue='app_' + (kind[1]))
+            ch.basic_publish(exchange='', routing_key='app_' + (kind[1]), body=(kind[1]) + ',' + (kind[2]))
+            # print("RABBITMQ, Send " + str(kind[1]))
+            ch.close()
             conn.close()
-            # ch.close() 이거 하면 안됨
         else:
             # pt[int(kind[1])] = threading.Thread(target=spawn_app, args=(kind[1],))
             # pt[int(kind[1])].start()
@@ -114,6 +114,6 @@ def callback(ch, method, properties, body):
         # print('ret', ret)
         # print(child.before)
 
-channel.basic_consume(callback, queue='app_q', no_ack=True)
+channel.basic_consume(callback, queue='app_manage', no_ack=True)
 print(' [*] Waiting for messages. To exit press CTRL+C')
 channel.start_consuming()

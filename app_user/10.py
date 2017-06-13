@@ -68,9 +68,9 @@ def ledRun(input=90):
         connection.close()
 
 
-log_kind = "온도"
+log_kind = "기상청 온도"
 
-rabbit_app_id = 5
+rabbit_app_id = 10
 
 # rabbit pre
 from app.models.app_model import AppModel
@@ -105,9 +105,8 @@ def callback(ch, method, properties, body):
 
     kind = body.decode().split(',')
     if kind[0] == str(rabbit_app_id):
-        # query = session.query(AppModel).filter_by(id=kind[0]).first()
+        session.commit()
         if 'False' == kind[1]:
-            session.commit()
             q = session.query(AppModel).filter_by(app_id=rabbit_app_id).first()
             if not q.app_switch:
                 SW = False
@@ -138,8 +137,8 @@ def rabbit():
     global channel
     global rabbit_app_id
 
-    channel.queue_declare(queue='app_q')
-    channel.basic_consume(callback, queue='app_q', no_ack=True)
+    channel.queue_declare(queue='app_'+str(rabbit_app_id))
+    channel.basic_consume(callback, queue='app_'+str(rabbit_app_id), no_ack=True)
 
     print(' [*] Waiting for messages. To exit press CTRL+C')
     channel.start_consuming()
@@ -148,7 +147,7 @@ pt = threading.Thread(target=rabbit)
 pt.start()
 
 
-print('기상청 온도로 LED 제어')
+print('버튼으로 LED 제어')
 while SW:
   if temperatureFromSky() > 18:
     ledRun(151515)

@@ -31,12 +31,12 @@ def on_message(client, userdata, msg):
 
     if msg.topic == 'control/app/00001214':
         # time.sleep(1) 이게 느리면 웹에 반영이 느림
-
+        session.commit()
         c = session.query(AppModel).order_by('id').all()
 
         # c = AppModel.query.all()
-        # for i in c:
-        #     print('c', i.app_switch)
+        for i in c:
+            print('c', i.app_switch)
         # query = session.query(AppModel).filter_by(id=18).first()
         # query = session.query(AppModel).order_by(AppModel.id.desc()).first()
         # print('qq,c', query.app_switch)
@@ -116,15 +116,15 @@ def on_message(client, userdata, msg):
             # print(res)
 
             res = post(api_url + 'app/save/one', data=json.dumps(query, cls=AlchemyEncoder))
-            print(res)
+            # print(res)
 
             # rabbit
             connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
             channel = connection.channel()
-            channel.queue_declare(queue='app_q')
-            channel.basic_publish(exchange='', routing_key='app_q',
+            channel.queue_declare(queue='app_manage')
+            channel.basic_publish(exchange='', routing_key='app_manage',
                                   body='app_switch_toggle,' + msg.payload.decode() + ',' + str(query.app_switch))
-            print("RABBITMQ, Send " + str(msg.payload))
+            # print("RABBITMQ, Send " + str(msg.payload))
             connection.close()
 
     elif msg.topic == 'app/output/00001214':

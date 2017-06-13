@@ -126,13 +126,13 @@ def getAppModi(app_origin):
         app_input += '기상청 온도 및 습도'
         input_detail = "[{'icon': 'sun icon', 'value': '온도 : " + str(
             getTemp()) + "°C'}, {'icon': 'theme icon', 'value': '습도 : " + str(getHumi()) + "%'}]"
-        log = 'log_kind = '+'"온도"'
+        log = 'log_kind = '+'"기상청 온도"'
     elif app_content.count('humidityFromSky()'):
         pre += open('pre/humi_pre.py', 'r').read() + '\n\n'
         app_input += '기상청 온도 및 습도'
         input_detail = "[{'icon': 'sun icon', 'value': 온도 : '" + str(
             getTemp()) + "°C'}, {'icon': 'theme icon', 'value': '습도 : " + str(getHumi()) + "%'}]"
-        log = 'log_kind = '+'"습도"'
+        log = 'log_kind = '+'"기상청 습도"'
     elif app_content.count('SKYFromSky()'):
         pre += open('pre/sky_pre.py', 'r').read() + '\n\n'
         app_input += '하늘 상태 및 강수 형태'
@@ -171,13 +171,13 @@ def getAppModi(app_origin):
         app_input += '온습도 센서'
         input_detail = "[{'icon': 'sun icon', 'value': '온도 : " + str(
             getTemp()) + "°C'}, {'icon': 'theme icon', 'value': '습도 : " + str(getHumi()) + "%'}]"
-        log = 'log_kind = ' + '"온도"'
+        log = 'log_kind = ' + '"센서 온도"'
     elif app_content.count('humidityFromSensor()'):
         pre += open('pre/humi_sensor_pre.py', 'r').read() + '\n\n'
         app_input += '온습도 센서'
         input_detail = "[{'icon': 'sun icon', 'value': '온도 : " + str(
             getTemp()) + "°C'}, {'icon': 'theme icon', 'value': '습도 : " + str(getHumi()) + "%'}]"
-        log = 'log_kind = ' + '"습도"'
+        log = 'log_kind = ' + '"센서 습도"'
 
     #
     elif app_content.count('recognizeHuman()'):

@@ -9,11 +9,14 @@ weatherFirst = True
 
 def PM10FromSky():
     global weatherFirst
+    global SW
     temp = 0
     if weatherFirst:
         weatherFirst = False
     else:
         time.sleep(10)
+    if not SW:
+        return 0
     res = get('https://api.moem.io/outside/mise')
     js = json.loads(res.text)
     temp = js['json_list'][0]['PM10']

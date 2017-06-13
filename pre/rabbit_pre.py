@@ -31,9 +31,8 @@ def callback(ch, method, properties, body):
 
     kind = body.decode().split(',')
     if kind[0] == str(rabbit_app_id):
-        # query = session.query(AppModel).filter_by(id=kind[0]).first()
+        session.commit()
         if 'False' == kind[1]:
-            session.commit()
             q = session.query(AppModel).filter_by(app_id=rabbit_app_id).first()
             if not q.app_switch:
                 SW = False
@@ -42,18 +41,20 @@ def callback(ch, method, properties, body):
                 print('##### end app : '+str(rabbit_app_id))
         elif kind[1] == 'input':
             input_val = int(kind[2])
+
+            # log
             q = session.query(AppSetting).filter_by(app_id=rabbit_app_id).first()
             in_node = q.in_node
             in_sensor = q.in_sensor
             content = 'Node [' + str(in_node) + ']의 Sensor[' + str(in_sensor) + ']에서 ' + \
                       log_kind + ' ' + str(input_val) + ' 감지'
+            print(content)
             item = AppLog(content, rabbit_app_id, str(in_node), str(in_sensor))
             session.add(item)
             session.commit()
-
             c = session.query(AppLog).order_by('id').all()
             res = post(api_url + 'app/log/save', data=json.dumps(c, cls=AlchemyEncoder))
-            print(res)
+            # print(res)
             input_sw = False
 
 
