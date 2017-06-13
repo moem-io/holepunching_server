@@ -6,7 +6,11 @@ from sqlalchemy.dialects.mysql import TIMESTAMP
 import datetime
 from sqlalchemy.sql.expression import text
 
+from config import *
+
 class AppLog(Base):
+    __bind_key__ = app_db
+
     __tablename__ = 'app_log'
     __table_args__ = {
         'mysql_engine': 'InnoDB',

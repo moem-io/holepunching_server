@@ -2,10 +2,13 @@ from sqlalchemy.dialects.mysql import TIMESTAMP
 import datetime
 from sqlalchemy.sql.expression import text
 from sqlalchemy import Column, Integer, String, Boolean, Enum
+from config import *
 
 from app import Base
 
 class AppSetting(Base):
+    __bind_key__ = app_db
+
     __tablename__ = 'app_setting'
     __table_args__ = {
         'mysql_engine': 'InnoDB',
@@ -19,7 +22,7 @@ class AppSetting(Base):
     out_sensor = Column(Integer, nullable=False )
     created_date = Column(
         String(100),
-        default=datetime.datetime.utcnow,
+        default=str(datetime.datetime.utcnow()).split('.')[0],
     )
 
     def __init__(self, app_id, in_node, in_sensor, out_node, out_sensor):

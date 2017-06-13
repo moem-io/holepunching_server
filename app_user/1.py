@@ -1,16 +1,31 @@
 #-*- coding: utf-8 -*-
-# api_url = API_URL
-api_url = 'http://127.0.0.1:5000/'
-# checkButtonCount
-def checkButtonCount():
-    global input_sw
-    global input_val
-    while input_sw:
-        continue
-    input_sw = True
-    return input_val
 
-# motor_pre
+# temperatureFromSky
+from requests import get
+import json
+import time
+
+# 기상청 온도는 1시간 단위로 변함(30~40분 사이에 뜸)
+# 대기 타다가 정각에 가져오는걸로 만들자
+weatherFirst = True
+
+def temperatureFromSky():
+    global weatherFirst
+    temp = 0
+    if weatherFirst:
+        weatherFirst = False
+    else:
+        time.sleep(10)
+    res = get('https://api.moem.io/outside/weather')
+    js = json.loads(res.text)
+    for i in js['json_list']:
+        if i['category'] == 'T1H':
+            # print('temp:'+str(i['obsrValue']))
+            temp = i['obsrValue']
+    print('temperature : ', temp)
+    return temp
+
+# ledRun
 import threading
 import pika
 
@@ -21,31 +36,28 @@ sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 from app.models.nodes import Nodes
 from app.models.sensor import Sensors
 from app import session
+from app.models.app_setting import AppSetting
+from app.models.app_model import AppModel
 
 
-# motor
-def motorRun(angle=90):
+def ledRun(input=90):
+    print('led output', input)
     global rabbit_app_id
-    print('motor angle', angle)
-    db = session.query(Sensors).all()
-    # print(db)
 
-    #todo 모터의 번호를 설정디비에서 가저옴
-    #todo 3번 모터의 값이 입력값과 같은지 확인
-    #todo 만약 같지 않으면 래빗엠큐로 보내고, 디비에 저장하든말든 함
+    rgb = session.query(AppModel).filter_by(app_id=rabbit_app_id).first()
+    if not rgb == input:
+        sett = session.query(AppSetting).filter_by(app_id=rabbit_app_id).first()
+        # rabbit
+        connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
+        channel = connection.channel()
+        channel.queue_declare(queue='led_q')
+        channel.basic_publish(exchange='',
+                              routing_key='led_q',
+                              body=str(sett.out_node) + ',' + str(sett.out_sensor) + ',' + str(input))
+        print("RABBITMQ, led queue, Send " + str(input))
+        connection.close()
 
-    # rabbit
-    connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
-    channel = connection.channel()
-    channel.queue_declare(queue='motor_q')
-    channel.basic_publish(exchange='',
-                          routing_key='motor_q',
-                          body=str(rabbit_app_id)+','+str(angle)+',motor_q')
-    print("RABBITMQ, motor queue, Send "+str(angle))
-    connection.close()
-    #todo 같으면 아무것도 안함
-
-log_kind = "버튼 눌림"
+log_kind = "온도"
 
 rabbit_app_id = 1
 
@@ -61,6 +73,7 @@ from config import *
 import json
 from manager.make_app import AlchemyEncoder
 
+api_url = API_URL
 
 connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
 channel = connection.channel()
@@ -77,15 +90,21 @@ def callback(ch, method, properties, body):
     global input_sw
     global input_val
     global log_kind
+    global api_url
 
     kind = body.decode().split(',')
     if kind[0] == str(rabbit_app_id):
         # query = session.query(AppModel).filter_by(id=kind[0]).first()
         if 'False' == kind[1]:
-            SW = False
-            channel.close()
-            connection.close()
-            print('end app : '+str(rabbit_app_id))
+            session.commit()
+            # time.sleep(1)
+            q = session.query(AppModel).filter_by(app_id=rabbit_app_id).first()
+            print('q.app_switch', q.app_switch)
+            if not q.app_switch:
+                SW = False
+                channel.close()
+                connection.close()
+                print('##### end app : '+str(rabbit_app_id))
         elif kind[1] == 'input':
             input_val = int(kind[2])
             q = session.query(AppSetting).filter_by(app_id=rabbit_app_id).first()
@@ -118,9 +137,9 @@ pt = threading.Thread(target=rabbit)
 pt.start()
 
 
-print('버튼으로 모터 제어')
+print('기상청 온도로 LED 제어')
 while SW:
-  if checkButtonCount() > 20:
-    motorRun(0)
+  if temperatureFromSky() > 18:
+    ledRun(151515)
   else:
-    motorRun(150)
+    ledRun(151515)

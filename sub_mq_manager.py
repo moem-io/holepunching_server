@@ -11,8 +11,8 @@ from config import *
 from manager.make_app import getAppModi
 from manager.make_app import AlchemyEncoder
 
-# api_url = API_URL
-api_url = 'http://127.0.0.1:5000/'
+api_url = API_URL
+# api_url = 'http://127.0.0.1:5000/'
 
 def on_connect(client, userdata, rc):
     print('connected with result' + str(rc))
@@ -77,7 +77,12 @@ def on_message(client, userdata, msg):
         data = msg.payload.decode().split(',')
         app_id = data[0]
         query = session.query(AppModel).filter_by(app_id=app_id).first()
-        query.app_output_detail = data[1]
+        led_rgb = data[1]
+        query.app_output_detail = led_rgb
+
+        #
+        sett = session.query(AppSetting).filter_by(app_id=app_id).first()
+
         session.commit()
 
         res = post(api_url+'app/save/one', data=json.dumps(query, cls=AlchemyEncoder))
@@ -86,8 +91,10 @@ def on_message(client, userdata, msg):
         connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
         channel = connection.channel()
         channel.queue_declare(queue='led_q')
-        channel.basic_publish(exchange='', routing_key='led_q', body=msg.payload.decode())
-        print("RABBITMQ, Send " + str(msg.payload))
+        channel.basic_publish(exchange='',
+                              routing_key='led_q',
+                              body=str(sett.out_node) + ',' + str(sett.out_sensor) + ',' + str(led_rgb))
+        print("RABBITMQ, Send " + str(sett.out_node) + ',' + str(sett.out_sensor) + ',' + str(led_rgb))
         connection.close()
 
     elif msg.topic == 'app/switch_toggle/00001214':
@@ -101,6 +108,8 @@ def on_message(client, userdata, msg):
             else:
                 query.app_switch = True
             session.commit()
+            query = session.query(AppModel).filter_by(app_id=app_id).first()
+            print('swit', query.app_switch)
 
             # c = session.query(AppModel).order_by('id').all()
             # res = post(api_url + 'app/save', data=json.dumps(c, cls=AlchemyEncoder))

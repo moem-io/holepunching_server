@@ -4,8 +4,10 @@ from app import Base
 from sqlalchemy.dialects.mysql import TIMESTAMP
 import datetime
 from sqlalchemy.sql.expression import text
-
+from config import *
 class AppModel(Base):
+    __bind_key__ = app_db
+
     __tablename__ = 'app_model'
     __table_args__ = {
         'mysql_engine': 'InnoDB',
@@ -22,9 +24,8 @@ class AppModel(Base):
     app_output_detail = Column(String(100), nullable=False)
     created_date = Column(
         String(100),
-        default=datetime.datetime.utcnow,
+        default=str(datetime.datetime.utcnow()).split('.')[0],
     )
-
     def __init__(self, app_id, app_name, app_detail, app_switch, app_input, app_input_detail, app_output, app_output_detail):
         self.app_id = app_id
         self.app_name = app_name

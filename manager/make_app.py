@@ -112,7 +112,6 @@ def getAppModi(app_origin):
 
     # 만약 특정 변수가 발견되면 그 변수에 맞는거 가져옴
     pre = '#-*- coding: utf-8 -*-\n\n'
-    pre += 'api_url = API_URL\n\n'
 
     app_input = ''
     input_detail = ''
