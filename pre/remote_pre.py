@@ -1,8 +1,6 @@
-# ledRun
+# remoteControl
 import threading
 import pika
-
-# db
 import os
 import sys
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
@@ -16,38 +14,27 @@ import json
 from requests import post
 from manager.make_app import AlchemyEncoder
 
-def ledRun(input=90):
+def remoteControl(in_val='xx'):
     global rabbit_app_id
     global SW
     global AppLog
     global output_log_kind
     global api_url
 
-
-    if not SW:
-        return 0
-
-    # todo led 비교 후 내보내기
-    # rgb = session.query(AppModel).filter_by(app_id=rabbit_app_id).first()
-    # rgb_in = rgb.app_output_detail
-    # if not rgb == input:
     if True:
         session.commit()
-
         sett = session.query(AppSetting).filter_by(app_id=rabbit_app_id).first()
 
         # save
         q = session.query(AppModel).filter_by(app_id=rabbit_app_id).first()
-        q.app_output_detail = input
+        q.app_output_detail = in_val
         session.commit()
 
         # log
         out_node = sett.out_node
         out_sensor = sett.out_sensor
-        # content = 'App ' + str(rabbit_app_id) + ' : Node [' + str(in_node) + ']의 Sensor[' + str(in_sensor) + ']에 ' + \
-        #           output_log_kind + ' ' + str(input) + ' 동작'
         content = 'Node [' + str(out_node) + ']의 Sensor[' + str(out_sensor) + ']에 ' + \
-                  output_log_kind + ' ' + str(input) + ' 동작'
+                  output_log_kind + ' ' + in_val + ' 동작'
         print(content)
         item = AppLog(content, rabbit_app_id, str(out_node), str(out_sensor),
                       str(datetime.datetime.utcnow()).split('.')[0])
@@ -59,11 +46,9 @@ def ledRun(input=90):
         # rabbit
         connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
         channel = connection.channel()
-        channel.queue_declare(queue='led_q')
+        channel.queue_declare(queue='remote_q')
         channel.basic_publish(exchange='',
-                              routing_key='led_q',
-                              body=str(sett.out_node) + ',' + str(sett.out_sensor) + ',' + str(input))
-        # print('led output :', input)
+                              routing_key='remote_q',
+                              body=str(sett.out_node) + ',' + str(sett.out_sensor) + ',' + in_val)
         print('')
-        # print("RABBITMQ, led queue, Send " + str(input))
         connection.close()

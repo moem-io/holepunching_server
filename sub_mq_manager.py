@@ -14,9 +14,9 @@ from config import *
 from manager.make_app import getAppModi
 from manager.make_app import AlchemyEncoder
 
+# api_url = API_URL
+api_url = 'http://127.0.0.1:5000/'
 
-api_url = API_URL
-# api_url = 'http://127.0.0.1:5000/'
 
 def on_connect(client, userdata, rc):
     print('connected with result' + str(rc))
@@ -89,7 +89,7 @@ def on_message(client, userdata, msg):
 
         session.commit()
 
-        res = post(api_url+'app/save/one', data=json.dumps(query, cls=AlchemyEncoder))
+        res = post(api_url + 'app/save/one', data=json.dumps(query, cls=AlchemyEncoder))
 
         # rabbit
         connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
@@ -102,14 +102,14 @@ def on_message(client, userdata, msg):
         connection.close()
 
         # log
-        in_node = sett.in_node
-        in_sensor = sett.in_sensor
+        out_node = sett.out_node
+        out_sensor = sett.out_sensor
         # content = 'App ' + str(rabbit_app_id) + ' : Node [' + str(in_node) + ']의 Sensor[' + str(in_sensor) + ']에 ' + \
         #           output_log_kind + ' ' + str(input) + ' 동작'
-        content = 'Node [' + str(in_node) + ']의 Sensor[' + str(in_sensor) + ']에 ' + \
+        content = 'Node [' + str(out_node) + ']의 Sensor[' + str(out_sensor) + ']에 ' + \
                   'LED' + ' ' + led_rgb + ' 동작'
         print(content)
-        item = AppLog(content, app_id, str(in_node), str(in_sensor),
+        item = AppLog(content, app_id, str(out_node), str(out_sensor),
                       str(datetime.datetime.utcnow()).split('.')[0])
         session.add(item)
         session.commit()
@@ -154,15 +154,35 @@ def on_message(client, userdata, msg):
         query.app_output_detail = data[1]
         session.commit()
 
+        #
+        sett = session.query(AppSetting).filter_by(app_id=app_id).first()
+
+        session.commit()
+
         res = post(api_url + 'app/save/one', data=json.dumps(query, cls=AlchemyEncoder))
 
         # rabbit
         connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
         channel = connection.channel()
         channel.queue_declare(queue=data[2])
-        channel.basic_publish(exchange='', routing_key=data[2], body=msg.payload.decode())
-        print("RABBITMQ, Send " + str(msg.payload))
+        channel.basic_publish(exchange='', routing_key=data[2],
+                              body=str(sett.out_node) + ',' + str(sett.out_sensor) + ',' + data[1])
+        print("RABBITMQ, Send " + str(sett.out_node) + ',' + str(sett.out_sensor) + ',' + data[1])
         connection.close()
+
+        # log
+        out_node = sett.out_node
+        out_sensor = sett.out_sensor
+        content = 'Node [' + str(out_node) + ']의 Sensor[' + str(out_sensor) + ']에 ' + \
+                  query.app_output + ' ' + data[1] + ' 동작'
+        print(content)
+        item = AppLog(content, app_id, str(out_node), str(out_sensor),
+                      str(datetime.datetime.utcnow()).split('.')[0])
+        session.add(item)
+        session.commit()
+        c = session.query(AppLog).order_by('id').all()
+        res = post(api_url + 'app/log/save', data=json.dumps(c, cls=AlchemyEncoder))
+
 
     elif msg.topic == 'app/setting/00001214':
 
@@ -181,6 +201,7 @@ def on_message(client, userdata, msg):
         # print('payload', payload)
 
         # print('json', json.dumps(c, cls=AlchemyEncoder))
+
 
 client = mqtt.Client()
 client.on_connect = on_connect

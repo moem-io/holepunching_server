@@ -213,7 +213,7 @@ def getAppModi(app_origin):
     elif app_content.count('remoteControl'):
         pre += open('pre/remote_pre.py', 'r').read() + '\n\n'
         output += '리모컨'
-        output_detail = '0'
+        output_detail = 'off'
         output_log = 'output_log_kind = ' + '"리모컨"'
     elif app_content.count('ledRun'):
         pre += open('pre/led_pre.py', 'r').read() + '\n\n'
@@ -223,7 +223,7 @@ def getAppModi(app_origin):
     elif app_content.count('buzzerRun'):
         pre += open('pre/buzzer_pre.py', 'r').read() + '\n\n'
         output += '부저'
-        output_detail = '0'
+        output_detail = 'stop'
         output_log = 'output_log_kind = ' + '"부저"'
 
         # add db
