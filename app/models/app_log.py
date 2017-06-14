@@ -23,15 +23,15 @@ class AppLog(Base):
     sensor = Column(String(100), nullable=False)
 
     created_date = Column(
-        String(100),
-        default=str(datetime.datetime.utcnow()).split('.')[0],
+        String(100), nullable=False,
     )
 
-    def __init__(self, log_content, app_id, node, sensor):
+    def __init__(self, log_content, app_id, node, sensor, created_date):
         self.log_content = log_content
         self.app_id = app_id
         self.node = node
         self.sensor = sensor
+        self.created_date = created_date
 
     def __repr__(self):
         return "<AppLog('%s', '%s')>" % (self.id, self.log_content)

@@ -3,6 +3,9 @@ import pika
 import time
 from app.models.app_model import AppModel
 from app.models.app_setting import AppSetting
+from app.models.app_log import AppLog
+import datetime
+
 from app import session
 import json
 from requests import post
@@ -10,6 +13,7 @@ from sqlalchemy.ext.serializer import loads, dumps
 from config import *
 from manager.make_app import getAppModi
 from manager.make_app import AlchemyEncoder
+
 
 api_url = API_URL
 # api_url = 'http://127.0.0.1:5000/'
@@ -35,8 +39,8 @@ def on_message(client, userdata, msg):
         c = session.query(AppModel).order_by('id').all()
 
         # c = AppModel.query.all()
-        for i in c:
-            print('c', i.app_switch)
+        # for i in c:
+        #     print('c', i.app_switch)
         # query = session.query(AppModel).filter_by(id=18).first()
         # query = session.query(AppModel).order_by(AppModel.id.desc()).first()
         # print('qq,c', query.app_switch)
@@ -44,7 +48,7 @@ def on_message(client, userdata, msg):
         # session.commit()
 
         res = post(api_url + 'app/save', data=json.dumps(c, cls=AlchemyEncoder))
-        print(res)
+        # print(res)
 
         # res = post('http://127.0.0.1:5000/' + 'app/save', data=json.dumps(c, cls=AlchemyEncoder))
         # print('res', res)
@@ -97,6 +101,22 @@ def on_message(client, userdata, msg):
         print("RABBITMQ, Send " + str(sett.out_node) + ',' + str(sett.out_sensor) + ',' + str(led_rgb))
         connection.close()
 
+        # log
+        in_node = sett.in_node
+        in_sensor = sett.in_sensor
+        # content = 'App ' + str(rabbit_app_id) + ' : Node [' + str(in_node) + ']의 Sensor[' + str(in_sensor) + ']에 ' + \
+        #           output_log_kind + ' ' + str(input) + ' 동작'
+        content = 'Node [' + str(in_node) + ']의 Sensor[' + str(in_sensor) + ']에 ' + \
+                  'LED' + ' ' + led_rgb + ' 동작'
+        print(content)
+        item = AppLog(content, app_id, str(in_node), str(in_sensor),
+                      str(datetime.datetime.utcnow()).split('.')[0])
+        session.add(item)
+        session.commit()
+        c = session.query(AppLog).order_by('id').all()
+        res = post(api_url + 'app/log/save', data=json.dumps(c, cls=AlchemyEncoder))
+
+
     elif msg.topic == 'app/switch_toggle/00001214':
         app_id = msg.payload.decode()
         query = session.query(AppModel).filter_by(app_id=app_id).first()
@@ -109,7 +129,7 @@ def on_message(client, userdata, msg):
                 query.app_switch = True
             session.commit()
             query = session.query(AppModel).filter_by(app_id=app_id).first()
-            print('swit', query.app_switch)
+            # print('swit', query.app_switch)
 
             # c = session.query(AppModel).order_by('id').all()
             # res = post(api_url + 'app/save', data=json.dumps(c, cls=AlchemyEncoder))

@@ -3,6 +3,15 @@
 import pika
 import os
 from multiprocessing import Process
+from app.models.app_model import AppModel
+from app.models.app_log import AppLog
+from app import session
+import datetime
+from config import *
+api_url = API_URL
+from requests import post
+from manager.make_app import AlchemyEncoder
+import json
 
 connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
 channel = connection.channel()
@@ -56,6 +65,7 @@ def callback(ch, method, properties, body):
         # print('query2', query.app_switch)
         # print('swt', kind[2])
 
+        session.commit()
         if 'False' == kind[2]:
             conn = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
             ch = conn.channel()
@@ -64,6 +74,19 @@ def callback(ch, method, properties, body):
             # print("RABBITMQ, Send " + str(kind[1]))
             ch.close()
             conn.close()
+
+            # log
+            query = session.query(AppModel).filter_by(app_id=kind[1]).first()
+            app_title = query.app_name
+            content = app_title+' 스위치 OFF'
+            print(content)
+            item = AppLog(content, kind[1], str(0), str(0),
+                          str(datetime.datetime.utcnow()).split('.')[0])
+            session.add(item)
+            session.commit()
+            c = session.query(AppLog).order_by('id').all()
+            res = post(api_url + 'app/log/save', data=json.dumps(c, cls=AlchemyEncoder))
+
         else:
             # pt[int(kind[1])] = threading.Thread(target=spawn_app, args=(kind[1],))
             # pt[int(kind[1])].start()
@@ -73,6 +96,19 @@ def callback(ch, method, properties, body):
 
             pt = Process(target=spawn_app, args=(kind[1],))
             pt.start()
+
+            # log
+            query = session.query(AppModel).filter_by(app_id=kind[1]).first()
+            app_title = query.app_name
+            content = app_title+' 스위치 ON'
+            print(content)
+            item = AppLog(content, kind[1], str(0), str(0),
+                          str(datetime.datetime.utcnow()).split('.')[0])
+            session.add(item)
+            session.commit()
+            c = session.query(AppLog).order_by('id').all()
+            res = post(api_url + 'app/log/save', data=json.dumps(c, cls=AlchemyEncoder))
+
 
 
 

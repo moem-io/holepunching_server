@@ -1,12 +1,9 @@
 from app.models.app_model import AppModel
 from app import session
 import json
-from requests import post
+from requests import post, get
 from config import *
 from sqlalchemy.ext.declarative import DeclarativeMeta
-
-from pre.temp_pre import *
-from pre.humi_pre import *
 from app.models.app_setting import AppSetting
 
 api_url = API_URL
@@ -120,6 +117,7 @@ def getAppModi(app_origin):
     output_detail = None
 
     log = None
+    output_log = None
     # input
     if app_content.count('temperatureFromSky()'):
         pre += open('pre/temp_pre.py', 'r').read() + '\n\n'
@@ -166,6 +164,11 @@ def getAppModi(app_origin):
         app_input += '토양 습도 센서'
         input_detail = "[{'icon': 'theme icon', 'value': '습도 : " + str(getTemp()) + "%'}]"
         log = 'log_kind = ' + '"토양습도"'
+    elif app_content.count('illuminationSensing()'):
+        pre += open('pre/soil_pre.py', 'r').read() + '\n\n'
+        app_input += '조도 센서'
+        input_detail = "[{'icon': 'sun icon', 'value': '조도 : " + str(getTemp()) + "lux'}]"
+        log = 'log_kind = ' + '"조도"'
     elif app_content.count('temperatureFromSensor()'):
         pre += open('pre/temp_sensor_pre.py', 'r').read() + '\n\n'
         app_input += '온습도 센서'
@@ -195,24 +198,33 @@ def getAppModi(app_origin):
         app_input += '버튼 눌림 횟수'
         input_detail = "[{'icon': 'hand pointer icon', 'value': '횟수 : " + str(1) + "번'}]"
         log = 'log_kind = ' + '"버튼 눌림"'
+    elif app_content.count('pressureDetect()'):
+        pre += open('pre/pressure_pre.py', 'r').read() + '\n\n'
+        app_input += '압력 감지'
+        input_detail = "[{'icon': 'angle double down icon', 'value': '세기 : " + str(1) + "Pa'}]"
+        log = 'log_kind = ' + '"압력"'
 
     # output
     if app_content.count('motorRun'):
         pre += open('pre/motor_pre.py', 'r').read() + '\n\n'
         output += '서보 모터'
         output_detail = '0'
+        output_log = 'output_log_kind = ' + '"서보 모터"'
     elif app_content.count('remoteControl'):
         pre += open('pre/remote_pre.py', 'r').read() + '\n\n'
         output += '리모컨'
         output_detail = '0'
+        output_log = 'output_log_kind = ' + '"리모컨"'
     elif app_content.count('ledRun'):
         pre += open('pre/led_pre.py', 'r').read() + '\n\n'
         output += 'LED'
         output_detail = '000000'
+        output_log = 'output_log_kind = ' + '"LED"'
     elif app_content.count('buzzerRun'):
         pre += open('pre/buzzer_pre.py', 'r').read() + '\n\n'
         output += '부저'
         output_detail = '0'
+        output_log = 'output_log_kind = ' + '"부저"'
 
         # add db
         # db_app = session.query(AppModel).filter_by(app_name=app_title).first()
@@ -231,6 +243,7 @@ def getAppModi(app_origin):
 
     # final pre
     pre += log + '\n\n'
+    pre += output_log + '\n\n'
     pre += 'rabbit_app_id = ' + str(app_id) + '\n\n'
     pre += open('pre/rabbit_pre.py', 'r').read() + '\n\n'
 

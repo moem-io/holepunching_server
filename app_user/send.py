@@ -11,8 +11,8 @@ from requests import post
 
 connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
 channel = connection.channel()
-channel.queue_declare(queue='app_9')
-channel.basic_publish(exchange='', routing_key='app_9', body='9'+','+'input'+','+'2')
+channel.queue_declare(queue='app_16 ')
+channel.basic_publish(exchange='', routing_key='app_16', body='16'+','+'input'+','+'9')
 print("RABBITMQ, Send " + str('send'))
 
 channel.close()
