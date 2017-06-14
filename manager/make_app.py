@@ -165,7 +165,7 @@ def getAppModi(app_origin):
         input_detail = "[{'icon': 'theme icon', 'value': '습도 : " + str(getTemp()) + "%'}]"
         log = 'log_kind = ' + '"토양습도"'
     elif app_content.count('illuminationSensing()'):
-        pre += open('pre/soil_pre.py', 'r').read() + '\n\n'
+        pre += open('pre/illum_pre.py', 'r').read() + '\n\n'
         app_input += '조도 센서'
         input_detail = "[{'icon': 'sun icon', 'value': '조도 : " + str(getTemp()) + "lux'}]"
         log = 'log_kind = ' + '"조도"'
