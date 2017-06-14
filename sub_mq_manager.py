@@ -89,7 +89,7 @@ def on_message(client, userdata, msg):
 
         session.commit()
 
-        res = post(api_url + 'app/save/one', data=json.dumps(query, cls=AlchemyEncoder))
+        # res = post(api_url + 'app/save/one', data=json.dumps(query, cls=AlchemyEncoder))
 
         # rabbit
         connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
@@ -135,7 +135,7 @@ def on_message(client, userdata, msg):
             # res = post(api_url + 'app/save', data=json.dumps(c, cls=AlchemyEncoder))
             # print(res)
 
-            res = post(api_url + 'app/save/one', data=json.dumps(query, cls=AlchemyEncoder))
+            # res = post(api_url + 'app/save/one', data=json.dumps(query, cls=AlchemyEncoder))
             # print(res)
 
             # rabbit
@@ -159,7 +159,7 @@ def on_message(client, userdata, msg):
 
         session.commit()
 
-        res = post(api_url + 'app/save/one', data=json.dumps(query, cls=AlchemyEncoder))
+        # res = post(api_url + 'app/save/one', data=json.dumps(query, cls=AlchemyEncoder))
 
         # rabbit
         connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
