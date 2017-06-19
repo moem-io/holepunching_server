@@ -8,7 +8,7 @@ import datetime
 
 from app import session
 import json
-from requests import post
+from requests import post, get
 from sqlalchemy.ext.serializer import loads, dumps
 from config import *
 from manager.make_app import getAppModi
@@ -39,6 +39,11 @@ def on_message(client, userdata, msg):
         # time.sleep(1) 이게 느리면 웹에 반영이 느림
         session.commit()
         c = session.query(AppModel).order_by('id').all()
+        # print('c', c)
+        # if c == '[]':
+        #     get(api_url + 'app/no')
+        # else:
+        res = post(api_url + 'app/save', data=json.dumps(c, cls=AlchemyEncoder))
 
         # c = AppModel.query.all()
         # for i in c:
@@ -49,7 +54,7 @@ def on_message(client, userdata, msg):
 
         # session.commit()
 
-        res = post(api_url + 'app/save', data=json.dumps(c, cls=AlchemyEncoder))
+        # res = post(api_url + 'app/save', data=json.dumps(c, cls=AlchemyEncoder))
         # print(res)
 
         # res = post('http://127.0.0.1:5000/' + 'app/save', data=json.dumps(c, cls=AlchemyEncoder))
@@ -218,7 +223,7 @@ def on_message(client, userdata, msg):
         channel = connection.channel()
         channel.queue_declare(queue='node_q')
         channel.basic_publish(exchange='', routing_key='node_q',
-                              body=node_id+','+'0'+'0'+rgb)
+                              body=node_id+','+'0'+','+'0'+','+rgb)
         print("RABBITMQ, Send " + node_id+','+rgb)
         connection.close()
 
@@ -227,7 +232,15 @@ def on_message(client, userdata, msg):
         data = msg.payload.decode().split(',')
         app_id = data[0]
 
+        # todo 앱 중지시키고 삭제하는거 해야함
+        # query = session.query(AppModel).filter_by(app_id=app_id).first()
+        # if query:
+        #     query.app_switch = False
+        #     session.commit()
+
         query = session.query(AppModel).filter_by(app_id=app_id).delete()
+        query = session.query(AppSetting).filter_by(app_id=app_id).delete()
+        # query = session.query(AppLog).filter_by(app_id=app_id).delete()
         session.commit()
 
 

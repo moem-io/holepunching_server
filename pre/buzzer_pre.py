@@ -49,6 +49,6 @@ def buzzerRun(in_val='xx'):
         channel.queue_declare(queue='buzzer_q')
         channel.basic_publish(exchange='',
                               routing_key='buzzer_q',
-                              body=str(sett.out_node) + ',' + str(sett.out_sensor) + ','+rabbit_app_id+','+ in_val)
+                              body=str(sett.out_node) + ',' + str(sett.out_sensor) + ','+str(rabbit_app_id)+','+ in_val)
         print('')
         connection.close()

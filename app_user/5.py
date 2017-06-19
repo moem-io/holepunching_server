@@ -1,6 +1,6 @@
 #-*- coding: utf-8 -*-
 
-# temperatureFromSky
+# temperatureFromSensor
 from requests import get
 import json
 import time
@@ -10,47 +10,37 @@ from app.models.app_log import AppLog
 import datetime
 from requests import post
 from manager.make_app import AlchemyEncoder
+import pika
 
-# 기상청 온도는 1시간 단위로 변함(30~40분 사이에 뜸)
-# 대기 타다가 정각에 가져오는걸로 만들자
-weatherFirst = True
+sensor_first = True
 
-def temperatureFromSky():
-    global weatherFirst
-    global SW
+
+def temperatureFromSensor():
+    global sensor_first
     global rabbit_app_id
-    global log_kind
-    global api_url
-    temp = 0
-    if weatherFirst:
-        weatherFirst = False
+    global input_sw
+    global input_val
+    if sensor_first:
+        sensor_first = False
     else:
         time.sleep(10)
-    if not SW:
-        return 0
-    res = get('https://api.moem.io/outside/weather')
-    js = json.loads(res.text)
-    for i in js['json_list']:
-        if i['category'] == 'T1H':
-            # print('temp:'+str(i['obsrValue']))
-            temp = i['obsrValue']
-    # log
-    sett = session.query(AppSetting).filter_by(app_id=rabbit_app_id).first()
-    in_node = sett.in_node
-    in_sensor = sett.in_sensor
-    # content = 'App ' + str(rabbit_app_id) + ' : Node [' + str(in_node) + ']의 Sensor[' + str(in_sensor) + ']에서 ' + \
-    #           log_kind + ' ' + str(kind[2]) + ' 감지'
-    content = 'Node [' + str(in_node) + ']의 Sensor[' + str(in_sensor) + ']에서 ' + \
-              log_kind + ' ' + str(temp) + ' 감지'
-    print(content)
-    item = AppLog(content, rabbit_app_id, str(in_node), str(in_sensor),
-                  str(datetime.datetime.utcnow()).split('.')[0])
-    session.add(item)
-    session.commit()
-    c = session.query(AppLog).order_by('id').all()
-    res = post(api_url + 'app/log/save', data=json.dumps(c, cls=AlchemyEncoder))
 
-    return temp
+    sett = session.query(AppSetting).filter_by(app_id=rabbit_app_id).first()
+
+    # rabbit
+    connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
+    channel = connection.channel()
+    channel.queue_declare(queue='sensor_q')
+    channel.basic_publish(exchange='',
+                          routing_key='sensor_q',
+                          body=str(sett.in_node) + ',' + str(sett.in_sensor) + ',' + str(rabbit_app_id) + ',' + 'temp')
+    connection.close()
+
+    while input_sw:
+        continue
+    input_sw = True
+    return input_val
+
 
 # ledRun
 import threading
@@ -116,18 +106,18 @@ def ledRun(input=90):
         channel.queue_declare(queue='led_q')
         channel.basic_publish(exchange='',
                               routing_key='led_q',
-                              body=str(sett.out_node) + ',' + str(sett.out_sensor) + ','+str(rabbit_app_id)+',' + str(input))
+                              body=str(sett.out_node) + ',' + str(sett.out_sensor) + ','+rabbit_app_id+',' + str(input))
         # print('led output :', input)
         print('')
         # print("RABBITMQ, led queue, Send " + str(input))
         connection.close()
 
 
-log_kind = "기상청 온도"
+log_kind = "센서 온도"
 
 output_log_kind = "LED"
 
-rabbit_app_id = 1
+rabbit_app_id = 5
 
 # rabbit pre
 from app.models.app_model import AppModel
@@ -208,9 +198,9 @@ pt = threading.Thread(target=rabbit)
 pt.start()
 
 
-print('기상청 온도로 LED제어')
+print('온습도 센서로 LED제어')
 while SW:
-  if temperatureFromSky() >= 18:
+  if temperatureFromSensor() >= 1:
     ledRun(901010)
   else:
-    ledRun(333333)
+    ledRun(109010)
