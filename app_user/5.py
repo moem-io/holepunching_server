@@ -1,46 +1,13 @@
 #-*- coding: utf-8 -*-
 
-# temperatureFromSensor
-from requests import get
-import json
-import time
-from app import session
-from app.models.app_setting import AppSetting
-from app.models.app_log import AppLog
-import datetime
-from requests import post
-from manager.make_app import AlchemyEncoder
-import pika
-
-sensor_first = True
-
-
-def temperatureFromSensor():
-    global sensor_first
-    global rabbit_app_id
+# illuminationSensing
+def illuminationSensing():
     global input_sw
     global input_val
-    if sensor_first:
-        sensor_first = False
-    else:
-        time.sleep(10)
-
-    sett = session.query(AppSetting).filter_by(app_id=rabbit_app_id).first()
-
-    # rabbit
-    connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
-    channel = connection.channel()
-    channel.queue_declare(queue='sensor_q')
-    channel.basic_publish(exchange='',
-                          routing_key='sensor_q',
-                          body=str(sett.in_node) + ',' + str(sett.in_sensor) + ',' + str(rabbit_app_id) + ',' + 'temp')
-    connection.close()
-
     while input_sw:
         continue
     input_sw = True
     return input_val
-
 
 # ledRun
 import threading
@@ -66,7 +33,6 @@ def ledRun(input=90):
     global AppLog
     global output_log_kind
     global api_url
-
 
     if not SW:
         return 0
@@ -106,14 +72,14 @@ def ledRun(input=90):
         channel.queue_declare(queue='led_q')
         channel.basic_publish(exchange='',
                               routing_key='led_q',
-                              body=str(sett.out_node) + ',' + str(sett.out_sensor) + ','+rabbit_app_id+',' + str(input))
+                              body=str(sett.out_node) + ',' + str(sett.out_sensor) + ','+str(rabbit_app_id)+',' + str(input))
         # print('led output :', input)
         print('')
         # print("RABBITMQ, led queue, Send " + str(input))
         connection.close()
 
 
-log_kind = "센서 온도"
+log_kind = "조도"
 
 output_log_kind = "LED"
 
@@ -198,9 +164,9 @@ pt = threading.Thread(target=rabbit)
 pt.start()
 
 
-print('온습도 센서로 LED제어')
+print('날이 어두워지면 불을 켠다!')
 while SW:
-  if temperatureFromSensor() >= 1:
-    ledRun(901010)
+  if illuminationSensing() < 3:
+    ledRun(999999)
   else:
-    ledRun(109010)
+    ledRun(101010)

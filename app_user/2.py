@@ -1,56 +1,13 @@
 #-*- coding: utf-8 -*-
 
-# temperatureFromSky
-from requests import get
-import json
-import time
-from app import session
-from app.models.app_setting import AppSetting
-from app.models.app_log import AppLog
-import datetime
-from requests import post
-from manager.make_app import AlchemyEncoder
-
-# 기상청 온도는 1시간 단위로 변함(30~40분 사이에 뜸)
-# 대기 타다가 정각에 가져오는걸로 만들자
-weatherFirst = True
-
-def temperatureFromSky():
-    global weatherFirst
-    global SW
-    global rabbit_app_id
-    global log_kind
-    global api_url
-    temp = 0
-    if weatherFirst:
-        weatherFirst = False
-    else:
-        time.sleep(10)
-    if not SW:
-        return 0
-    res = get('https://api.moem.io/outside/weather')
-    js = json.loads(res.text)
-    for i in js['json_list']:
-        if i['category'] == 'T1H':
-            # print('temp:'+str(i['obsrValue']))
-            temp = i['obsrValue']
-    # log
-    sett = session.query(AppSetting).filter_by(app_id=rabbit_app_id).first()
-    in_node = sett.in_node
-    in_sensor = sett.in_sensor
-    # content = 'App ' + str(rabbit_app_id) + ' : Node [' + str(in_node) + ']의 Sensor[' + str(in_sensor) + ']에서 ' + \
-    #           log_kind + ' ' + str(kind[2]) + ' 감지'
-    content = 'Node [' + str(in_node) + ']의 Sensor[' + str(in_sensor) + ']에서 ' + \
-              log_kind + ' ' + str(temp) + ' 감지'
-    print(content)
-    item = AppLog(content, rabbit_app_id, str(in_node), str(in_sensor),
-                  str(datetime.datetime.utcnow()).split('.')[0])
-    session.add(item)
-    session.commit()
-    c = session.query(AppLog).order_by('id').all()
-    res = post(api_url + 'app/log/save', data=json.dumps(c, cls=AlchemyEncoder))
-
-    return temp
+# clapCount
+def clapCount():
+    global input_sw
+    global input_val
+    while input_sw:
+        continue
+    input_sw = True
+    return input_val
 
 # ledRun
 import threading
@@ -76,7 +33,6 @@ def ledRun(input=90):
     global AppLog
     global output_log_kind
     global api_url
-
 
     if not SW:
         return 0
@@ -123,7 +79,7 @@ def ledRun(input=90):
         connection.close()
 
 
-log_kind = "기상청 온도"
+log_kind = "박수"
 
 output_log_kind = "LED"
 
@@ -208,9 +164,9 @@ pt = threading.Thread(target=rabbit)
 pt.start()
 
 
-print('기상청 온도로 LED제어')
+print('박수로 LED 제어')
 while SW:
-  if temperatureFromSky() >= 18:
-    ledRun(901010)
+  if clapCount() >= 2:
+    ledRun(992313)
   else:
-    ledRun(333333)
+    ledRun(112233)

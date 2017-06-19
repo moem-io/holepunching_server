@@ -21,6 +21,9 @@ def buzzerRun(in_val='xx'):
     global output_log_kind
     global api_url
 
+    if not SW:
+        return 0
+
     if True:
         session.commit()
         sett = session.query(AppSetting).filter_by(app_id=rabbit_app_id).first()

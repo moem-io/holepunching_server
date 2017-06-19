@@ -23,7 +23,6 @@ def ledRun(input=90):
     global output_log_kind
     global api_url
 
-
     if not SW:
         return 0
 

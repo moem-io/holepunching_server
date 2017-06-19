@@ -1,26 +1,56 @@
 #-*- coding: utf-8 -*-
 
-# soil
+# PM10FromSky
 from requests import get
 import json
 import time
+from app import session
+from app.models.app_setting import AppSetting
+from app.models.app_log import AppLog
+import datetime
+from requests import post
+from manager.make_app import AlchemyEncoder
+# 기상청 온도는 1시간 단위로 변함(30~40분 사이에 뜸)
+# 대기 타다가 정각에 가져오는걸로 만들자
+weatherFirst = True
 
-sensor_first = True
+def PM10FromSky():
+    global weatherFirst
+    global SW
+    global rabbit_app_id
+    global log_kind
+    global api_url
+    temp = 0
+    if weatherFirst:
+        weatherFirst = False
+    else:
+        time.sleep(10)
+    if not SW:
+        return 0
+    res = get('https://api.moem.io/outside/mise')
+    js = json.loads(res.text)
+    temp = js['json_list'][0]['PM10']
+    # log
+    sett = session.query(AppSetting).filter_by(app_id=rabbit_app_id).first()
+    in_node = sett.in_node
+    in_sensor = sett.in_sensor
+    # content = 'App ' + str(rabbit_app_id) + ' : Node [' + str(in_node) + ']의 Sensor[' + str(in_sensor) + ']에서 ' + \
+    #           log_kind + ' ' + str(kind[2]) + ' 감지'
+    content = 'Node [' + str(in_node) + ']의 Sensor[' + str(in_sensor) + ']에서 ' + \
+              log_kind + ' ' + str(temp) + ' 감지'
+    print(content)
+    item = AppLog(content, rabbit_app_id, str(in_node), str(in_sensor),
+                  str(datetime.datetime.utcnow()).split('.')[0])
+    session.add(item)
+    session.commit()
+    c = session.query(AppLog).order_by('id').all()
+    res = post(api_url + 'app/log/save', data=json.dumps(c, cls=AlchemyEncoder))
 
-# illuminationSensing
-def illuminationSensing():
-    global input_sw
-    global input_val
-    while input_sw:
-        continue
-    input_sw = True
-    return input_val
+    return temp
 
-# ledRun
+# buzzerRun
 import threading
 import pika
-
-# db
 import os
 import sys
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
@@ -34,38 +64,30 @@ import json
 from requests import post
 from manager.make_app import AlchemyEncoder
 
-def ledRun(input=90):
+def buzzerRun(in_val='xx'):
     global rabbit_app_id
     global SW
     global AppLog
     global output_log_kind
     global api_url
 
-
     if not SW:
         return 0
 
-    # todo led 비교 후 내보내기
-    # rgb = session.query(AppModel).filter_by(app_id=rabbit_app_id).first()
-    # rgb_in = rgb.app_output_detail
-    # if not rgb == input:
     if True:
         session.commit()
-
         sett = session.query(AppSetting).filter_by(app_id=rabbit_app_id).first()
 
         # save
         q = session.query(AppModel).filter_by(app_id=rabbit_app_id).first()
-        q.app_output_detail = input
+        q.app_output_detail = in_val
         session.commit()
 
         # log
         out_node = sett.out_node
         out_sensor = sett.out_sensor
-        # content = 'App ' + str(rabbit_app_id) + ' : Node [' + str(in_node) + ']의 Sensor[' + str(in_sensor) + ']에 ' + \
-        #           output_log_kind + ' ' + str(input) + ' 동작'
         content = 'Node [' + str(out_node) + ']의 Sensor[' + str(out_sensor) + ']에 ' + \
-                  output_log_kind + ' ' + str(input) + ' 동작'
+                  output_log_kind + ' ' + in_val + ' 동작'
         print(content)
         item = AppLog(content, rabbit_app_id, str(out_node), str(out_sensor),
                       str(datetime.datetime.utcnow()).split('.')[0])
@@ -77,19 +99,17 @@ def ledRun(input=90):
         # rabbit
         connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
         channel = connection.channel()
-        channel.queue_declare(queue='led_q')
+        channel.queue_declare(queue='buzzer_q')
         channel.basic_publish(exchange='',
-                              routing_key='led_q',
-                              body=str(sett.out_node) + ',' + str(sett.out_sensor) + ',' + str(input))
-        # print('led output :', input)
+                              routing_key='buzzer_q',
+                              body=str(sett.out_node) + ',' + str(sett.out_sensor) + ','+str(rabbit_app_id)+','+ in_val)
         print('')
-        # print("RABBITMQ, led queue, Send " + str(input))
         connection.close()
 
 
-log_kind = "조도"
+log_kind = "미세먼지"
 
-output_log_kind = "LED"
+output_log_kind = "부저"
 
 rabbit_app_id = 3
 
@@ -157,7 +177,6 @@ def callback(ch, method, properties, body):
                 # print(res)
                 input_sw = False
 
-
 def rabbit():
     global connection
     global channel
@@ -173,9 +192,9 @@ pt = threading.Thread(target=rabbit)
 pt.start()
 
 
-print('조도로 LED제어')
+print('미세먼지 알람')
 while SW:
-  if illuminationSensing() >= 1:
-    ledRun(901010)
+  if PM10FromSky() >= 51:
+    buzzerRun('ti')
   else:
-    ledRun(109010)
+    buzzerRun('stop')
