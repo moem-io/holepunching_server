@@ -14,8 +14,8 @@ from config import *
 from manager.make_app import getAppModi
 from manager.make_app import AlchemyEncoder
 
-# api_url = API_URL
-api_url = 'http://127.0.0.1:5000/'
+api_url = API_URL
+# api_url = 'http://127.0.0.1:5000/'
 
 
 def on_connect(client, userdata, rc):
@@ -29,6 +29,7 @@ def on_connect(client, userdata, rc):
     client.subscribe('app/output/00001214')
     client.subscribe('app/setting/00001214')
     client.subscribe('node/click/00001214')
+    client.subscribe('app/delete/00001214')
 
 
 def on_message(client, userdata, msg):
@@ -99,8 +100,8 @@ def on_message(client, userdata, msg):
         channel.queue_declare(queue='led_q')
         channel.basic_publish(exchange='',
                               routing_key='led_q',
-                              body=str(sett.out_node) + ',' + str(sett.out_sensor) + ',' + str(led_rgb))
-        print("RABBITMQ, Send " + str(sett.out_node) + ',' + str(sett.out_sensor) + ',' + str(led_rgb))
+                              body=str(sett.out_node) + ',' + str(sett.out_sensor) + ','+app_id+',' + str(led_rgb))
+        print("RABBITMQ, Send " + str(sett.out_node) + ',' + str(sett.out_sensor) + ','+app_id+','  + str(led_rgb))
         connection.close()
 
         # log
@@ -170,8 +171,8 @@ def on_message(client, userdata, msg):
         channel = connection.channel()
         channel.queue_declare(queue=data[2])
         channel.basic_publish(exchange='', routing_key=data[2],
-                              body=str(sett.out_node) + ',' + str(sett.out_sensor) + ',' + data[1])
-        print("RABBITMQ, Send " + str(sett.out_node) + ',' + str(sett.out_sensor) + ',' + data[1])
+                              body=str(sett.out_node) + ',' + str(sett.out_sensor) + ','+app_id+',' + data[1])
+        print("RABBITMQ, Send " + str(sett.out_node) + ',' + str(sett.out_sensor) + ','+app_id+',' + data[1])
         connection.close()
 
         # log
@@ -217,9 +218,18 @@ def on_message(client, userdata, msg):
         channel = connection.channel()
         channel.queue_declare(queue='node_q')
         channel.basic_publish(exchange='', routing_key='node_q',
-                              body=node_id+','+rgb)
+                              body=node_id+','+'0'+'0'+rgb)
         print("RABBITMQ, Send " + node_id+','+rgb)
         connection.close()
+
+    elif msg.topic == 'app/delete/00001214':
+
+        data = msg.payload.decode().split(',')
+        app_id = data[0]
+
+        query = session.query(AppModel).filter_by(app_id=app_id).delete()
+        session.commit()
+
 
 client = mqtt.Client()
 client.on_connect = on_connect

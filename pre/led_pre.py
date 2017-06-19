@@ -62,7 +62,7 @@ def ledRun(input=90):
         channel.queue_declare(queue='led_q')
         channel.basic_publish(exchange='',
                               routing_key='led_q',
-                              body=str(sett.out_node) + ',' + str(sett.out_sensor) + ',' + str(input))
+                              body=str(sett.out_node) + ',' + str(sett.out_sensor) + ','+rabbit_app_id+',' + str(input))
         # print('led output :', input)
         print('')
         # print("RABBITMQ, led queue, Send " + str(input))

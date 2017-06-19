@@ -49,6 +49,6 @@ def remoteControl(in_val='xx'):
         channel.queue_declare(queue='remote_q')
         channel.basic_publish(exchange='',
                               routing_key='remote_q',
-                              body=str(sett.out_node) + ',' + str(sett.out_sensor) + ',' + in_val)
+                              body=str(sett.out_node) + ',' + str(sett.out_sensor) + ','+rabbit_app_id+',' + in_val)
         print('')
         connection.close()

@@ -62,7 +62,6 @@ def callback(ch, method, properties, body):
                 # print(res)
                 input_sw = False
 
-
 def rabbit():
     global connection
     global channel
