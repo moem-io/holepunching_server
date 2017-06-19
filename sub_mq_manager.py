@@ -14,8 +14,8 @@ from config import *
 from manager.make_app import getAppModi
 from manager.make_app import AlchemyEncoder
 
-api_url = API_URL
-# api_url = 'http://127.0.0.1:5000/'
+# api_url = API_URL
+api_url = 'http://127.0.0.1:5000/'
 
 
 def on_connect(client, userdata, rc):
@@ -28,6 +28,7 @@ def on_connect(client, userdata, rc):
     client.subscribe('app/switch_toggle/00001214')
     client.subscribe('app/output/00001214')
     client.subscribe('app/setting/00001214')
+    client.subscribe('node/click/00001214')
 
 
 def on_message(client, userdata, msg):
@@ -89,6 +90,7 @@ def on_message(client, userdata, msg):
 
         session.commit()
 
+        # 이 post가 없으면 앱에 반영이 빨라짐
         # res = post(api_url + 'app/save/one', data=json.dumps(query, cls=AlchemyEncoder))
 
         # rabbit
@@ -135,6 +137,7 @@ def on_message(client, userdata, msg):
             # res = post(api_url + 'app/save', data=json.dumps(c, cls=AlchemyEncoder))
             # print(res)
 
+            # 이 post가 없으면 앱에 반영이 빨라짐
             # res = post(api_url + 'app/save/one', data=json.dumps(query, cls=AlchemyEncoder))
             # print(res)
 
@@ -159,6 +162,7 @@ def on_message(client, userdata, msg):
 
         session.commit()
 
+        # 이 post가 없으면 앱에 반영이 빨라짐
         # res = post(api_url + 'app/save/one', data=json.dumps(query, cls=AlchemyEncoder))
 
         # rabbit
@@ -202,6 +206,20 @@ def on_message(client, userdata, msg):
 
         # print('json', json.dumps(c, cls=AlchemyEncoder))
 
+    elif msg.topic == 'node/click/00001214':
+        data = msg.payload.decode().split(',')
+        node_id = data[0]
+        rgb = data[1]
+        print(node_id, rgb)
+
+        # rabbit
+        connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
+        channel = connection.channel()
+        channel.queue_declare(queue='node_q')
+        channel.basic_publish(exchange='', routing_key='node_q',
+                              body=node_id+','+rgb)
+        print("RABBITMQ, Send " + node_id+','+rgb)
+        connection.close()
 
 client = mqtt.Client()
 client.on_connect = on_connect

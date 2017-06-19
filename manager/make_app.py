@@ -8,7 +8,6 @@ from app.models.app_setting import AppSetting
 
 api_url = API_URL
 
-
 class AlchemyEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj.__class__, DeclarativeMeta):
@@ -25,8 +24,6 @@ class AlchemyEncoder(json.JSONEncoder):
             return fields
 
         return json.JSONEncoder.default(self, obj)
-
-
 def getTemp():
     temp = 20
     res = get('https://api.moem.io/outside/weather')
@@ -35,8 +32,6 @@ def getTemp():
         if i['category'] == 'T1H':
             temp = i['obsrValue']
     return temp
-
-
 def getHumi():
     temp = 20
     res = get('https://api.moem.io/outside/weather')
@@ -45,8 +40,6 @@ def getHumi():
         if i['category'] == 'REH':
             temp = i['obsrValue']
     return temp
-
-
 def getSKY():
     temp = None
     str = ''
@@ -64,8 +57,6 @@ def getSKY():
     elif temp == 4:
         str += '4(흐림)'
     return str
-
-
 def getPTY():
     temp = None
     str = ''
@@ -83,14 +74,11 @@ def getPTY():
     elif temp == 3:
         str += '3(눈)'
     return str
-
-
 def mise(cate):
     res = get('https://api.moem.io/outside/mise')
     js = json.loads(res.text)
     first = js['json_list'][0]
     return str(first[cate])
-
 
 def getAppModi(app_origin):
     # 가져온 정보
@@ -107,7 +95,7 @@ def getAppModi(app_origin):
     # 앱 제작 중
     app_switch = False
 
-    # 만약 특정 변수가 발견되면 그 변수에 맞는거 가져옴
+    # utf-8 setting
     pre = '#-*- coding: utf-8 -*-\n\n'
 
     app_input = ''

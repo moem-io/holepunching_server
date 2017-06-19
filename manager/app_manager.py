@@ -21,7 +21,6 @@ channel = connection.channel()
 
 channel.queue_declare(queue='app_manage')
 
-
 # channel.queue_declare(queue='app_q') # 한개만 됨
 
 # def spawn_app(i):
@@ -34,15 +33,12 @@ channel.queue_declare(queue='app_manage')
 #     def run(self):
 #         os.system('cd .. && source .env && python app_user/' + self.app_id + '.py')
 
-
 def spawn_app(i):
     os.system('cd .. && source .env && python app_user/' + i + '.py')
     # os.system('bash .env && python app_user/' + i + '.py')
 
-
 def callback(ch, method, properties, body):
     # print("\nRABBITMQ app_manager, Received %r" % body)
-
     kind = body.decode().split(',')
     # print(kind)
     if kind[0] == 'app_upload':
