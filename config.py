@@ -8,3 +8,4 @@ app_db = os.environ['app_db']
 
 API_URL = os.environ['API_URL']
 BASE_URL = os.environ['BASE_URL']
+# API_URL = 'http://127.0.0.1:5000/'

@@ -9,6 +9,9 @@ import datetime
 from requests import post
 from manager.make_app import AlchemyEncoder
 
+from manager.make_app import getTemp, getHumi
+from app.models.app_model import AppModel
+
 # 기상청 온도는 1시간 단위로 변함(30~40분 사이에 뜸)
 # 대기 타다가 정각에 가져오는걸로 만들자
 weatherFirst = True
@@ -32,6 +35,12 @@ def temperatureFromSky():
         if i['category'] == 'T1H':
             # print('temp:'+str(i['obsrValue']))
             temp = i['obsrValue']
+
+    # app_model save
+    model = session.query(AppModel).filter_by(app_id=rabbit_app_id).first()
+    model.app_input_detail = "[{'icon': 'sun icon', 'value': '온도 : " + \
+                             str(temp) + "°C'}, {'icon': 'theme icon', 'value': '습도 : " + str(getHumi()) + "%'}]"
+
     # log
     sett = session.query(AppSetting).filter_by(app_id=rabbit_app_id).first()
     in_node = sett.in_node

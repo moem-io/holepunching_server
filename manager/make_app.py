@@ -116,7 +116,7 @@ def getAppModi(app_origin):
     elif app_content.count('humidityFromSky()'):
         pre += open('pre/humi_pre.py', 'r').read() + '\n\n'
         app_input += '기상청 온도 및 습도'
-        input_detail = "[{'icon': 'sun icon', 'value': 온도 : '" + str(
+        input_detail = "[{'icon': 'sun icon', 'value': '온도 : " + str(
             getTemp()) + "°C'}, {'icon': 'theme icon', 'value': '습도 : " + str(getHumi()) + "%'}]"
         log = 'log_kind = '+'"기상청 습도"'
     elif app_content.count('SKYFromSky()'):
@@ -133,8 +133,8 @@ def getAppModi(app_origin):
     elif app_content.count('PM10FromSky()'):
         pre += open('pre/PM10_pre.py', 'r').read() + '\n\n'
         app_input += '미세먼지(10㎛)'
-        input_detail = "[{'icon': 'certificate icon', 'value': ' : " + mise('PM10') + "㎍/㎥'}]"
         log = 'log_kind = '+'"미세먼지"'
+        input_detail = "[{'icon': 'certificate icon', 'value': ' : " + mise('PM10') + "㎍/㎥'}]"
     elif app_content.count('PM25FromSky()'):
         pre += open('pre/PM25_pre.py', 'r').read() + '\n\n'
         app_input += '초미세먼지(2.5㎛)'
@@ -143,31 +143,31 @@ def getAppModi(app_origin):
     elif app_content.count('O3FromSky()'):
         pre += open('pre/O3_pre.py', 'r').read() + '\n\n'
         app_input += '오존농도(ppm)'
-        input_detail = "[{'icon': 'certificate icon', 'value': '" + mise('O3') + "ppm'}]"
         log = 'log_kind = ' + '"오존농도"'
+        input_detail = "[{'icon': 'certificate icon', 'value': '" + mise('O3') + "ppm'}]"
 
     # sensor
     elif app_content.count('soilHumidity()'):
         pre += open('pre/soil_pre.py', 'r').read() + '\n\n'
         app_input += '토양 습도 센서'
-        input_detail = "[{'icon': 'theme icon', 'value': '습도 : " + str(getTemp()) + "%'}]"
+        input_detail = "[{'icon': 'theme icon', 'value': '습도 : " + str(0) + "%'}]"
         log = 'log_kind = ' + '"토양습도"'
     elif app_content.count('illuminationSensing()'):
         pre += open('pre/illum_pre.py', 'r').read() + '\n\n'
         app_input += '조도 센서'
-        input_detail = "[{'icon': 'sun icon', 'value': '조도 : " + str(getTemp()) + "lux'}]"
+        input_detail = "[{'icon': 'sun icon', 'value': '조도 : " + str(0) + "lux'}]"
         log = 'log_kind = ' + '"조도"'
     elif app_content.count('temperatureFromSensor()'):
         pre += open('pre/temp_sensor_pre.py', 'r').read() + '\n\n'
         app_input += '온습도 센서'
         input_detail = "[{'icon': 'sun icon', 'value': '온도 : " + str(
-            getTemp()) + "°C'}, {'icon': 'theme icon', 'value': '습도 : " + str(getHumi()) + "%'}]"
+            getTemp()) + "°C'}, {'icon': 'theme icon', 'value': '습도 : " + str(0) + "%'}]"
         log = 'log_kind = ' + '"센서 온도"'
     elif app_content.count('humidityFromSensor()'):
         pre += open('pre/humi_sensor_pre.py', 'r').read() + '\n\n'
         app_input += '온습도 센서'
         input_detail = "[{'icon': 'sun icon', 'value': '온도 : " + str(
-            getTemp()) + "°C'}, {'icon': 'theme icon', 'value': '습도 : " + str(getHumi()) + "%'}]"
+            getTemp()) + "°C'}, {'icon': 'theme icon', 'value': '습도 : " + str(0) + "%'}]"
         log = 'log_kind = ' + '"센서 습도"'
 
     #
@@ -179,17 +179,18 @@ def getAppModi(app_origin):
     elif app_content.count('clapCount()'):
         pre += open('pre/clap_cnt_pre.py', 'r').read() + '\n\n'
         app_input += '박수 횟수'
-        input_detail = "[{'icon': 'sign language icon', 'value': '횟수 : " + "1번'}, {'icon': 'bullseye icon', 'value': '세기 : " + str(getHumi()) + "%'}]"
+        # input_detail = "[{'icon': 'sign language icon', 'value': '횟수 : " + "1번'}, {'icon': 'bullseye icon', 'value': '세기 : " + str(getHumi()) + "%'}]"
+        input_detail = "[{'icon': 'sign language icon', 'value': '횟수 : " + str(0) + "번'}]"
         log = 'log_kind = ' + '"박수"'
     elif app_content.count('checkButtonCount()'):
         pre += open('pre/btn_cnt_pre.py', 'r').read() + '\n\n'
         app_input += '버튼 눌림 횟수'
-        input_detail = "[{'icon': 'hand pointer icon', 'value': '횟수 : " + str(1) + "번'}]"
+        input_detail = "[{'icon': 'hand pointer icon', 'value': '횟수 : " + str(0) + "번'}]"
         log = 'log_kind = ' + '"버튼 눌림"'
     elif app_content.count('pressureDetect()'):
         pre += open('pre/pressure_pre.py', 'r').read() + '\n\n'
         app_input += '압력 감지'
-        input_detail = "[{'icon': 'angle double down icon', 'value': '세기 : " + str(1) + "Pa'}]"
+        input_detail = "[{'icon': 'angle double down icon', 'value': '세기 : " + str(0) + "Pa'}]"
         log = 'log_kind = ' + '"압력"'
 
     # output

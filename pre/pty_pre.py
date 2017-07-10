@@ -8,6 +8,7 @@ from app.models.app_log import AppLog
 import datetime
 from requests import post
 from manager.make_app import AlchemyEncoder
+from app.models.app_model import AppModel
 
 # 기상청 온도는 1시간 단위로 변함(30~40분 사이에 뜸)
 # 대기 타다가 정각에 가져오는걸로 만들자
@@ -31,6 +32,13 @@ def PTYFromSky():
     for i in js['json_list']:
         if i['category'] == 'PTY':
             temp = i['obsrValue']
+
+    pty = ['강수 없음', '비', '비/눈', '눈']
+
+    # app_model save
+    model = session.query(AppModel).filter_by(app_id=rabbit_app_id).first()
+    model.app_input_detail = "[{'icon': 'certificate icon', 'value': '" + pty[temp] + "'}]"
+
     # log
     sett = session.query(AppSetting).filter_by(app_id=rabbit_app_id).first()
     in_node = sett.in_node
@@ -38,7 +46,7 @@ def PTYFromSky():
     # content = 'App ' + str(rabbit_app_id) + ' : Node [' + str(in_node) + ']의 Sensor[' + str(in_sensor) + ']에서 ' + \
     #           log_kind + ' ' + str(kind[2]) + ' 감지'
     content = 'Node [' + str(in_node) + ']의 Sensor[' + str(in_sensor) + ']에서 ' + \
-              log_kind + ' ' + str(temp) + ' 감지'
+              log_kind + ' ' + pty[temp] + ' 감지'
     print(content)
     item = AppLog(content, rabbit_app_id, str(in_node), str(in_sensor),
                   str(datetime.datetime.utcnow()).split('.')[0])
