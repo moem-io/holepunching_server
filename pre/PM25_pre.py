@@ -27,7 +27,7 @@ def PM25FromSky():
         time.sleep(10)
     if not SW:
         return 0
-    res = get('https://api.moem.io/outside/mise')
+    res = get(api_url+'outside/mise')
     js = json.loads(res.text)
     temp = js['json_list'][0]['PM25']
 

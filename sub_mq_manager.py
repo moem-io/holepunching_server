@@ -15,6 +15,7 @@ from manager.make_app import getAppModi
 from manager.make_app import AlchemyEncoder
 
 api_url = API_URL
+ip_url = "13.124.186.174"
 
 def on_connect(client, userdata, rc):
     print('connected with result' + str(rc))
@@ -245,5 +246,5 @@ def on_message(client, userdata, msg):
 client = mqtt.Client()
 client.on_connect = on_connect
 client.on_message = on_message
-client.connect('13.124.19.161', 1883, 60)
+client.connect(ip_url, 1883, 60)
 client.loop_forever()

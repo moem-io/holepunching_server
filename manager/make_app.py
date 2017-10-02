@@ -26,7 +26,7 @@ class AlchemyEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 def getTemp():
     temp = 20
-    res = get('https://api.moem.io/outside/weather')
+    res = get(api_url+'outside/weather')
     js = json.loads(res.text)
     for i in js['json_list']:
         if i['category'] == 'T1H':
@@ -34,7 +34,7 @@ def getTemp():
     return temp
 def getHumi():
     temp = 20
-    res = get('https://api.moem.io/outside/weather')
+    res = get(api_url+'outside/weather')
     js = json.loads(res.text)
     for i in js['json_list']:
         if i['category'] == 'REH':
@@ -43,7 +43,7 @@ def getHumi():
 def getSKY():
     temp = None
     str = ''
-    res = get('https://api.moem.io/outside/weather')
+    res = get(api_url+'outside/weather')
     js = json.loads(res.text)
     for i in js['json_list']:
         if i['category'] == 'SKY':
@@ -60,7 +60,7 @@ def getSKY():
 def getPTY():
     temp = None
     str = ''
-    res = get('https://api.moem.io/outside/weather')
+    res = get(api_url+'outside/weather')
     js = json.loads(res.text)
     for i in js['json_list']:
         if i['category'] == 'PTY':
@@ -75,7 +75,7 @@ def getPTY():
         str += '3(눈)'
     return str
 def mise(cate):
-    res = get('https://api.moem.io/outside/mise')
+    res = get(api_url+'outside/mise')
     js = json.loads(res.text)
     first = js['json_list'][0]
     return str(first[cate])

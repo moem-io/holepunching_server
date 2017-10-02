@@ -31,7 +31,8 @@ def temperatureFromSky():
         time.sleep(10)
     if not SW:
         return 0
-    res = get('https://api.moem.io/outside/weather')
+
+    res = get(api_url+'outside/weather')
     js = json.loads(res.text)
     for i in js['json_list']:
         if i['category'] == 'T1H':
@@ -148,6 +149,7 @@ SW = True
 input_sw = True
 input_val = None
 
+
 def callback(ch, method, properties, body):
     global SW
     global connection
@@ -167,7 +169,7 @@ def callback(ch, method, properties, body):
                 SW = False
                 channel.close()
                 connection.close()
-                print('##### end app : '+str(rabbit_app_id))
+                print('##### end app : ' + str(rabbit_app_id))
         elif kind[1] == 'input':
             # todo
             if True:
@@ -179,7 +181,8 @@ def callback(ch, method, properties, body):
                 elif log_kind == '센서 습도':
                     sensor = int(kind[2].split('/')[1])
                     q.app_input_detail = "[{'icon': 'sun icon', 'value': '온도 : " + \
-                        kind[2].split('/')[0] + "°C'}, {'icon': 'theme icon', 'value': '습도 : " + str(sensor) + "%'}]"
+                                         kind[2].split('/')[0] + "°C'}, {'icon': 'theme icon', 'value': '습도 : " + str(
+                        sensor) + "%'}]"
                 elif log_kind == '조도':
                     sensor = int(kind[2])
                     q.app_input_detail = "[{'icon': 'sun icon', 'value': '조도 : " + str(sensor) + "lux'}]"
@@ -199,7 +202,6 @@ def callback(ch, method, properties, body):
                     sensor = int(kind[2])
                 q = session.query(AppSetting).filter_by(app_id=rabbit_app_id).first()
                 input_val = sensor
-
 
                 # log
                 in_node = q.in_node
@@ -250,23 +252,26 @@ def callback(ch, method, properties, body):
                 # print(res)
                 input_sw = False
 
+
 def rabbit():
     global connection
     global channel
     global rabbit_app_id
 
-    channel.queue_declare(queue='app_'+str(rabbit_app_id))
-    channel.basic_consume(callback, queue='app_'+str(rabbit_app_id), no_ack=True)
+    channel.queue_declare(queue='app_' + str(rabbit_app_id))
+    channel.basic_consume(callback, queue='app_' + str(rabbit_app_id), no_ack=True)
 
     print(' [*] Waiting for messages. To exit press CTRL+C')
     channel.start_consuming()
+
 
 pt = threading.Thread(target=rabbit)
 pt.start()
 
 
+
 while SW:
-  if temperatureFromSky() >= 24:
+  if temperatureFromSky() > 24:
     remoteControl('on')
   else:
     remoteControl('off')

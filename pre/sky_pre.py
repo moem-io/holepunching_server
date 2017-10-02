@@ -27,7 +27,7 @@ def SKYFromSky():
         time.sleep(10)
     if not SW:
         return 0
-    res = get('https://api.moem.io/outside/weather')
+    res = get(api_url+'outside/weather')
     js = json.loads(res.text)
     for i in js['json_list']:
         if i['category'] == 'SKY':
